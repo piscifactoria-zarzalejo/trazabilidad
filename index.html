@@ -380,8 +380,11 @@
   </div>
 
   <div id="successCard" style="display:none" class="card">
-    <div class="alert alert-success">✓ Albarán registrado correctamente. El stock ha sido actualizado.</div>
-    <button class="btn btn-primary" onclick="resetForm()">Registrar otro albarán</button>
+    <div class="alert alert-success" id="successMsg">✓ Albarán registrado correctamente. El stock ha sido actualizado.</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btnSiguiente" style="display:none" onclick="procesarSiguienteAlbaran()">→ Siguiente albarán del PDF</button>
+      <button class="btn btn-secondary" onclick="resetForm()">Registrar otro albarán</button>
+    </div>
   </div>
 </div>
 
@@ -818,6 +821,8 @@ function handleDrop(e) {
 }
 
 const WORKER_URL = 'https://calter-proxy.daniel-calvo79.workers.dev';
+let pdfQueue = []; // cola de albaranes pendientes del PDF actual
+let pdfQueueIdx = 0;
 
 async function processPDF(file) {
   if (!file) return;
@@ -831,15 +836,26 @@ async function processPDF(file) {
     const response = await fetch(WORKER_URL, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ pdfBase64: base64 })
+      body: JSON.stringify({ pdfBase64: base64, extractAll: true })
     });
 
     const data = await response.json();
     const clean = (data.text || '').replace(/```json|```/g, '').trim();
-    const extracted = JSON.parse(clean);
+    
+    // Try to parse as array of albaranes or single
+    let albaranes;
+    try {
+      const parsed = JSON.parse(clean);
+      albaranes = Array.isArray(parsed) ? parsed : [parsed];
+    } catch(e) {
+      albaranes = [JSON.parse(clean)];
+    }
+
+    pdfQueue = albaranes;
+    pdfQueueIdx = 0;
     
     document.getElementById('extractingCard').style.display = 'none';
-    populateForm(extracted);
+    mostrarAlbaranDeCola();
 
   } catch(err) {
     console.error('Error extrayendo PDF:', err);
@@ -848,6 +864,20 @@ async function processPDF(file) {
     document.getElementById('alertExtract').innerHTML = `<div class="alert alert-warning">⚠ No se pudo extraer automáticamente. Rellena los datos manualmente.</div>`;
     resetFormFields();
   }
+}
+
+function mostrarAlbaranDeCola() {
+  if (pdfQueueIdx >= pdfQueue.length) return;
+  const albaran = pdfQueue[pdfQueueIdx];
+  const total = pdfQueue.length;
+  const actual = pdfQueueIdx + 1;
+  populateForm(albaran, total > 1 ? `Albarán ${actual} de ${total}` : null);
+}
+
+function procesarSiguienteAlbaran() {
+  pdfQueueIdx++;
+  document.getElementById('successCard').style.display = 'none';
+  mostrarAlbaranDeCola();
 }
 
 function fileToBase64(file) {
@@ -859,9 +889,10 @@ function fileToBase64(file) {
   });
 }
 
-function populateForm(data) {
+function populateForm(data, label) {
   document.getElementById('formCard').style.display = 'block';
-  document.getElementById('alertExtract').innerHTML = `<div class="alert alert-success">✓ Datos extraídos del PDF. Revisa y añade los números de lote.</div>`;
+  const labelText = label ? ` — ${label}` : '';
+  document.getElementById('alertExtract').innerHTML = `<div class="alert alert-success">✓ Datos extraídos del PDF${labelText}. Revisa y añade los números de lote.</div>`;
   document.getElementById('f_albaran').value = data.albaran || '';
   document.getElementById('f_fecha').value = data.fecha || new Date().toISOString().split('T')[0];
   
@@ -1006,12 +1037,24 @@ function registrarAlbaran() {
     if (!confirm('Hay líneas sin número de lote. ¿Continuar igualmente?')) return;
   }
 
+  // Check duplicate
+  if (state.albaranes.find(a => a.albaran === albaran)) {
+    if (!confirm(`El albarán "${albaran}" ya está registrado. ¿Quieres registrarlo de todas formas?`)) return;
+  }
+
   const reg = { id: Date.now(), albaran, fecha, cliente, codigoCliente, lineas, registrado: new Date().toISOString() };
   state.albaranes.push(reg);
   save();
 
   document.getElementById('formCard').style.display = 'none';
   document.getElementById('successCard').style.display = 'block';
+  
+  // Show next button if there are more albaranes in queue
+  const hayMas = pdfQueue.length > 1 && pdfQueueIdx < pdfQueue.length - 1;
+  document.getElementById('btnSiguiente').style.display = hayMas ? 'inline-flex' : 'none';
+  const pendientes = pdfQueue.length - pdfQueueIdx - 1;
+  document.getElementById('successMsg').textContent = `✓ Albarán "${albaran}" registrado correctamente.${hayMas ? ` Quedan ${pendientes} albarán(es) en este PDF.` : ' Stock actualizado.'}`;
+  
   renderStockDisplay();
 }
 
@@ -1022,6 +1065,8 @@ function resetForm() {
   document.getElementById('alertExtract').innerHTML = '';
   resetFormFields();
   document.getElementById('pdfInput').value = '';
+  pdfQueue = [];
+  pdfQueueIdx = 0;
 }
 
 // ===================== STOCK =====================
