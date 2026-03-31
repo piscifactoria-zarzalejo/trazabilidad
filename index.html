@@ -306,6 +306,12 @@
   <div class="header-right" id="clock"></div>
 </header>
 
+<div id="loadingOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;align-items:center;justify-content:center;flex-direction:column;gap:1rem">
+  <div style="background:#fff;padding:2rem 3rem;border-radius:8px;text-align:center">
+    <div class="spinner" style="margin:0 auto 1rem"></div>
+    <div style="font-family:var(--sans);font-size:0.9rem;color:var(--text-muted)">Cargando datos desde la nube…</div>
+  </div>
+</div>
 <nav>
   <button class="active" onclick="showPanel('registro')">📥 Registrar Albarán</button>
   <button onclick="showPanel('stock')">📦 Stock</button>
@@ -651,29 +657,82 @@ const PRODUCTOS_DEFAULT = [
 ];
 
 // ===================== STATE =====================
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbx2YUcn-81kj7YoXrWSoLkDM-3pyO-t1XToMDOjV3I2NfajxAbJSeYZiAkIC_GOd4UvMw/exec';
+
 let state = {
   productos: JSON.parse(localStorage.getItem('cal_productos') || 'null') || PRODUCTOS_DEFAULT,
-  stockInicial: JSON.parse(localStorage.getItem('cal_stockInicial') || '{}'),
-  albaranes: JSON.parse(localStorage.getItem('cal_albaranes') || '[]'),
+  stockInicial: {},
+  albaranes: [],
 };
 let editIdx = null;
+let guardandoRemoto = false;
 
 function save() {
+  // Always save productos locally (catalogue data)
   localStorage.setItem('cal_productos', JSON.stringify(state.productos));
-  localStorage.setItem('cal_stockInicial', JSON.stringify(state.stockInicial));
-  localStorage.setItem('cal_albaranes', JSON.stringify(state.albaranes));
+  // Save albaranes and stock to Google Sheets
+  saveRemoto();
+}
+
+async function saveRemoto() {
+  if (guardandoRemoto) return;
+  guardandoRemoto = true;
+  try {
+    await Promise.all([
+      fetch(SHEETS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'guardar', albaranes: state.albaranes })
+      }),
+      fetch(SHEETS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'guardarStock', stock: state.stockInicial })
+      })
+    ]);
+  } catch(e) {
+    console.warn('Error guardando en Google Sheets:', e);
+  } finally {
+    guardandoRemoto = false;
+  }
+}
+
+async function cargarRemoto() {
+  mostrarCargando(true);
+  try {
+    const [r1, r2] = await Promise.all([
+      fetch(SHEETS_URL, { method: 'POST', body: JSON.stringify({ action: 'cargar' }) }),
+      fetch(SHEETS_URL, { method: 'POST', body: JSON.stringify({ action: 'cargarStock' }) })
+    ]);
+    const d1 = await r1.json();
+    const d2 = await r2.json();
+    if (d1.albaranes) state.albaranes = d1.albaranes;
+    if (d2.stock) state.stockInicial = d2.stock;
+  } catch(e) {
+    console.warn('Error cargando desde Google Sheets:', e);
+    // Fallback to localStorage if available
+    state.albaranes = JSON.parse(localStorage.getItem('cal_albaranes') || '[]');
+    state.stockInicial = JSON.parse(localStorage.getItem('cal_stockInicial') || '{}');
+  } finally {
+    mostrarCargando(false);
+  }
+}
+
+function mostrarCargando(show) {
+  let el = document.getElementById('loadingOverlay');
+  if (!el) return;
+  el.style.display = show ? 'flex' : 'none';
 }
 
 // ===================== INIT =====================
-window.onload = () => {
+window.onload = async () => {
+  initClock();
   initClienteDatalist();
   initMesRapido();
   renderTablaProductos();
+  await cargarRemoto();
   renderStockEdit();
   renderStockDisplay();
   renderTablaAlbaranes();
   initBuscarSelect();
-  initClock();
 };
 
 function initClock() {
@@ -798,9 +857,9 @@ function showPanel(name) {
   document.getElementById('panel-' + name).classList.add('active');
   event.target.classList.add('active');
   if (name === 'stock') { renderStockEdit(); renderStockDisplay(); }
-  if (name === 'listado') renderTablaAlbaranes();
+  if (name === 'listado') { cargarRemoto().then(() => renderTablaAlbaranes()); }
   if (name === 'productos') renderTablaProductos();
-  if (name === 'buscar') initBuscarSelect();
+  if (name === 'buscar') { cargarRemoto().then(() => initBuscarSelect()); }
   if (name === 'clientes') renderTablaClientes();
 }
 
@@ -1111,6 +1170,16 @@ function renderStockEdit() {
 }
 
 function guardarStock() {
+  // Read values from inputs
+  state.productos.filter(p => p.activo).forEach(p => {
+    const inputs = document.querySelectorAll('#stockEditGrid input[type=number]');
+    inputs.forEach(inp => {
+      const item = inp.closest('.stock-item');
+      if (item && item.querySelector('.prod-name')?.textContent === p.nombre) {
+        state.stockInicial[p.codigo] = parseInt(inp.value) || 0;
+      }
+    });
+  });
   save();
   renderStockDisplay();
   alert('✓ Existencias guardadas correctamente.');
