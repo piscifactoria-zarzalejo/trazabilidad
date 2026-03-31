@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Trazabilidad · Calter / Zarzalejo</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
 
@@ -127,6 +126,7 @@
     border-color: var(--accent);
     background: #fff;
   }
+  input[readonly] { background: #eee; color: var(--text-muted); }
 
   /* BUTTONS */
   .btn {
@@ -143,8 +143,15 @@
     gap: 0.4rem;
   }
   .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); }
   .btn-secondary { background: transparent; color: var(--text); border: 1px solid var(--border-dark); }
+  .btn-secondary:hover { background: var(--bg); }
   .btn-danger { background: var(--danger); color: #fff; }
+  .btn-danger:hover { opacity: 0.85; }
+  .btn-small { font-size: 0.78rem; padding: 0.35rem 0.75rem; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1.25rem; }
 
   /* UPLOAD ZONE */
   .upload-zone {
@@ -156,8 +163,73 @@
     transition: all 0.2s;
     background: var(--bg);
   }
-  .upload-zone.drag-over { border-color: var(--accent); background: var(--accent-light); }
+  .upload-zone:hover, .upload-zone.drag-over { border-color: var(--accent); background: var(--accent-light); }
   .upload-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+  .upload-zone p { color: var(--text-muted); font-size: 0.875rem; }
+  .upload-zone strong { color: var(--text); }
+
+  /* TABLES */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+  th {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background: var(--bg);
+    padding: 0.6rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  td { padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--accent-light); }
+  .mono { font-family: var(--mono); font-size: 0.82rem; }
+
+  /* BADGES */
+  .badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+  .badge-green { background: var(--accent-light); color: var(--accent); }
+  .badge-orange { background: var(--warning-light); color: var(--warning); }
+  .badge-red { background: var(--danger-light); color: var(--danger); }
+  .badge-gray { background: #eee; color: #666; }
+
+  /* STOCK GRID */
+  .stock-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.75rem; }
+  .stock-item {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 1rem;
+  }
+  .stock-item .prod-name { font-size: 0.8rem; font-weight: 500; margin-bottom: 0.5rem; }
+  .stock-item .prod-qty { font-family: var(--mono); font-size: 1.4rem; font-weight: 600; color: var(--accent); }
+  .stock-item .prod-unit { font-size: 0.72rem; color: var(--text-muted); }
+  .stock-item.low .prod-qty { color: var(--danger); }
+  .stock-item.zero .prod-qty { color: #bbb; }
+
+  /* ALERTS */
+  .alert {
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .alert-success { background: var(--accent-light); color: var(--accent); border: 1px solid #b5d4b2; }
+  .alert-error { background: var(--danger-light); color: var(--danger); border: 1px solid #f0b8b8; }
+  .alert-warning { background: var(--warning-light); color: var(--warning); border: 1px solid #e8d88a; }
+  .alert-info { background: #e8f0fb; color: #1a4a8a; border: 1px solid #b5cef0; }
 
   /* LOADING */
   .loading { display: flex; align-items: center; gap: 0.75rem; padding: 1.5rem; color: var(--text-muted); }
@@ -170,131 +242,1243 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* PRODUCT LINES */
+  /* PRODUCT LINES in form */
   .product-line {
     display: grid;
-    grid-template-columns: 2fr 1fr 1.5fr auto;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr auto;
     gap: 0.5rem;
+    align-items: center;
     padding: 0.5rem 0;
     border-bottom: 1px solid var(--border);
   }
+  .product-line:last-child { border-bottom: none; }
+
+  /* SEARCH BAR */
+  .search-bar { display: flex; gap: 0.75rem; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .search-bar input { max-width: 300px; }
+
+  /* PRINT */
+  @media print {
+    header, nav, .btn, .btn-row, .no-print { display: none !important; }
+    .panel { display: block !important; }
+    .panel:not(.active) { display: none !important; }
+    body { background: #fff; }
+    .card { border: 1px solid #ccc; page-break-inside: avoid; }
+  }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: 8px;
+    padding: 2rem;
+    max-width: 700px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+
+  .text-right { text-align: right; }
+  .mt-1 { margin-top: 0.5rem; }
+  .mt-2 { margin-top: 1rem; }
+  .gap-1 { gap: 0.5rem; }
+  .flex { display: flex; }
+  .items-center { align-items: center; }
+  .justify-between { justify-content: space-between; }
+  .w-full { width: 100%; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+  .empty { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.875rem; }
 </style>
 </head>
 <body>
 
 <header>
   <div class="logo">CALTER <span>·</span> ZARZALEJO &nbsp;—&nbsp; <span style="font-weight:300;color:#aaa">Trazabilidad</span></div>
+  <div class="header-right" id="clock"></div>
 </header>
 
 <nav>
   <button class="active" onclick="showPanel('registro')">📥 Registrar Albarán</button>
+  <button onclick="showPanel('stock')">📦 Stock</button>
   <button onclick="showPanel('listado')">📋 Listado</button>
+  <button onclick="showPanel('buscar')">🔍 Buscar por Lote</button>
+  <button onclick="showPanel('informes')">📊 Informes</button>
+  <button onclick="showPanel('clientes')">👥 Clientes</button>
+  <button onclick="showPanel('productos')">⚙️ Productos</button>
 </nav>
 
 <main>
+
+<!-- ===================== PANEL: REGISTRO ===================== -->
 <div id="panel-registro" class="panel active">
   <h2>Registrar Albarán</h2>
-  <p class="subtitle">Sube el PDF. La IA extraerá el cliente, número y productos.</p>
+  <p class="subtitle">Sube el PDF del albarán. La IA extrae los datos automáticamente. Solo tienes que añadir el lote.</p>
 
   <div class="card">
-    <div class="card-title">1. Subir PDF del albarán</div>
-    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('pdfInput').click()">
+    <div class="card-title">1. Elige cómo introducir los datos</div>
+    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('pdfInput').click()"
+         ondragover="event.preventDefault();this.classList.add('drag-over')"
+         ondragleave="this.classList.remove('drag-over')"
+         ondrop="handleDrop(event)">
       <div class="upload-icon">📄</div>
-      <p><strong>Haz clic para subir el PDF de albaranes</strong></p>
+      <p><strong>Haz clic o arrastra el PDF aquí</strong></p>
+      <p>La IA extrae los datos automáticamente</p>
     </div>
     <input type="file" id="pdfInput" accept=".pdf" style="display:none" onchange="processPDF(this.files[0])">
+    <div style="text-align:center;margin-top:1rem;color:var(--text-muted);font-size:0.82rem">— o —</div>
+    <div style="text-align:center;margin-top:0.75rem">
+      <button class="btn btn-secondary" onclick="abrirFormManual()">✏️ Introducir datos a mano</button>
+    </div>
   </div>
 
   <div id="extractingCard" style="display:none" class="card">
-    <div class="loading"><div class="spinner"></div>Analizando PDF con Gemini IA...</div>
+    <div class="loading"><div class="spinner"></div>Analizando el PDF con IA…</div>
   </div>
 
   <div id="formCard" style="display:none" class="card">
-    <div class="card-title">2. Revisar datos extraídos</div>
-    <div class="form-grid">
-      <div class="form-group"><label>Nº Albarán</label><input type="text" id="f_albaran"></div>
-      <div class="form-group"><label>Fecha</label><input type="date" id="f_fecha"></div>
-      <div class="form-group"><label>Cliente</label><input type="text" id="f_cliente"></div>
+    <div class="card-title">2. Revisar datos y añadir lotes</div>
+    <div id="alertExtract"></div>
+
+    <div class="form-grid" style="margin-bottom:1.25rem">
+      <div class="form-group">
+        <label>Nº Albarán</label>
+        <input type="text" id="f_albaran">
+      </div>
+      <div class="form-group">
+        <label>Fecha</label>
+        <input type="date" id="f_fecha">
+      </div>
+      <div class="form-group">
+        <label>Cliente</label>
+        <input type="text" id="f_cliente" list="clienteList" oninput="resolveClientCode()">
+        <datalist id="clienteList"></datalist>
+      </div>
+      <div class="form-group">
+        <label>Cód. Cliente</label>
+        <input type="text" id="f_codigoCliente" placeholder="Ej: 870" oninput="resolveClientName()" list="codigoList">
+        <datalist id="codigoList"></datalist>
+      </div>
     </div>
-    <hr>
-    <div class="card-title">Productos</div>
+
+    <div class="card-title">Líneas de producto</div>
     <div id="lineasProducto"></div>
-    <div class="btn-row" style="margin-top:15px">
-      <button class="btn btn-primary" onclick="alert('Guardado en base de datos (Simulado)')">✓ Confirmar y Registrar</button>
-      <button class="btn btn-secondary" onclick="resetForm()">Cancelar</button>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="registrarAlbaran()">✓ Registrar Albarán</button>
+      <button class="btn btn-secondary" onclick="addLineaProducto()">+ Añadir línea</button>
+      <button class="btn btn-secondary" onclick="resetForm()">✕ Cancelar</button>
+    </div>
+  </div>
+
+  <div id="successCard" style="display:none" class="card">
+    <div class="alert alert-success">✓ Albarán registrado correctamente. El stock ha sido actualizado.</div>
+    <button class="btn btn-primary" onclick="resetForm()">Registrar otro albarán</button>
+  </div>
+</div>
+
+<!-- ===================== PANEL: STOCK ===================== -->
+<div id="panel-stock" class="panel">
+  <div class="flex justify-between items-center" style="margin-bottom:0.25rem">
+    <h2>Stock Actual</h2>
+    <button class="btn btn-secondary btn-small no-print" onclick="window.print()">🖨 Imprimir</button>
+  </div>
+  <p class="subtitle">Unidades disponibles por producto. Se actualiza automáticamente al registrar albaranes.</p>
+
+  <div class="card">
+    <div class="card-title">Editar existencias iniciales</div>
+    <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:1rem">Modifica las existencias iniciales de cada producto (a principio de año o cuando hagas recuento).</p>
+    <div id="stockEditGrid" class="stock-grid"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="guardarStock()">Guardar existencias</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Existencias actuales</div>
+    <div id="stockDisplay" class="stock-grid"></div>
+  </div>
+</div>
+
+<!-- ===================== PANEL: LISTADO ===================== -->
+<div id="panel-listado" class="panel">
+  <div class="flex justify-between items-center" style="margin-bottom:0.25rem">
+    <h2>Listado de Albaranes</h2>
+    <button class="btn btn-secondary btn-small no-print" onclick="window.print()">🖨 Imprimir</button>
+  </div>
+  <p class="subtitle">Historial completo de albaranes registrados.</p>
+
+  <div class="card no-print">
+    <div class="search-bar">
+      <input type="text" id="filtroTexto" placeholder="Buscar por albarán, cliente…" oninput="filtrarListado()">
+      <input type="date" id="filtroDesde" oninput="filtrarListado()">
+      <span style="color:var(--text-muted);font-size:0.82rem">hasta</span>
+      <input type="date" id="filtroHasta" oninput="filtrarListado()">
+      <button class="btn btn-secondary btn-small" onclick="limpiarFiltros()">Limpiar</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Albarán</th>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Productos</th>
+            <th>Uds Total</th>
+            <th class="no-print">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tablaAlbaranes"></tbody>
+      </table>
+      <div id="listaVacia" class="empty" style="display:none">No hay albaranes registrados aún.</div>
     </div>
   </div>
 </div>
+
+<!-- ===================== PANEL: BUSCAR ===================== -->
+<div id="panel-buscar" class="panel">
+  <h2>Búsqueda por Lote</h2>
+  <p class="subtitle">Encuentra todos los albaranes que utilizaron un lote específico.</p>
+
+  <div class="card">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Número de Lote</label>
+        <input type="text" id="buscarLote" placeholder="Ej: L2026-01" oninput="buscarPorLote()">
+      </div>
+      <div class="form-group">
+        <label>Producto (opcional)</label>
+        <select id="buscarProducto" onchange="buscarPorLote()">
+          <option value="">Todos</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div id="resultadosBusqueda" class="card" style="display:none">
+    <div class="card-title">Resultados de trazabilidad</div>
+    <div id="resultadosContent"></div>
+  </div>
+</div>
+
+<!-- ===================== PANEL: INFORMES ===================== -->
+<div id="panel-informes" class="panel">
+  <h2>Informes</h2>
+  <p class="subtitle">Genera informes por mes, rango de fechas o cliente.</p>
+
+  <div class="card no-print">
+    <div class="card-title">Filtros del informe</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Desde</label>
+        <input type="date" id="inf_desde">
+      </div>
+      <div class="form-group">
+        <label>Hasta</label>
+        <input type="date" id="inf_hasta">
+      </div>
+      <div class="form-group">
+        <label>Mes rápido</label>
+        <select id="inf_mes" onchange="setMesRapido()">
+          <option value="">-- Seleccionar mes --</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Cód. Cliente (opcional)</label>
+        <input type="text" id="inf_codigoCliente" placeholder="Ej: 870" oninput="resolveInfClientName()">
+      </div>
+      <div class="form-group">
+        <label>Nombre cliente (opcional)</label>
+        <input type="text" id="inf_cliente" list="clienteListInf" placeholder="Todos" oninput="resolveInfClientCode()">
+        <datalist id="clienteListInf"></datalist>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="generarInforme()">Generar informe</button>
+      <button class="btn btn-secondary" onclick="window.print()">🖨 Imprimir informe</button>
+    </div>
+  </div>
+
+  <div id="informeOutput"></div>
+</div>
+
+<!-- ===================== PANEL: CLIENTES ===================== -->
+<div id="panel-clientes" class="panel">
+  <h2>Gestión de Clientes</h2>
+  <p class="subtitle">Añade nuevos clientes o consulta el listado completo con sus códigos.</p>
+
+  <div class="card">
+    <div class="card-title">Añadir nuevo cliente</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Código</label>
+        <input type="text" id="cli_codigo" placeholder="Ej: 1282">
+      </div>
+      <div class="form-group">
+        <label>Nombre</label>
+        <input type="text" id="cli_nombre" placeholder="Nombre del cliente">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="agregarCliente()">+ Añadir cliente</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Listado de clientes</div>
+    <div class="search-bar">
+      <input type="text" id="filtroClientes" placeholder="Buscar por nombre o código…" oninput="filtrarClientes()">
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Código</th><th>Nombre</th><th>Acciones</th></tr></thead>
+        <tbody id="tablaClientes"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PANEL: PRODUCTOS ===================== -->
+<div id="panel-productos" class="panel">
+  <h2>Gestión de Productos</h2>
+  <p class="subtitle">Añade, edita o desactiva productos del catálogo.</p>
+
+  <div class="card">
+    <div class="card-title">Añadir nuevo producto</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Código</label>
+        <input type="text" id="prod_codigo" placeholder="Ej: HTC50">
+      </div>
+      <div class="form-group">
+        <label>Nombre</label>
+        <input type="text" id="prod_nombre" placeholder="Ej: HT. Calter 50grs">
+      </div>
+      <div class="form-group">
+        <label>Peso neto (kg)</label>
+        <input type="number" id="prod_peso" step="0.001" placeholder="0.100">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="agregarProducto()">+ Añadir producto</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Catálogo de productos</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Código</th><th>Nombre</th><th>Peso neto</th><th>Estado</th><th>Acciones</th></tr>
+        </thead>
+        <tbody id="tablaProductos"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 </main>
 
+<!-- MODAL EDITAR ALBARÁN -->
+<div class="modal-overlay" id="modalEditar">
+  <div class="modal">
+    <div class="modal-title">Editar Albarán</div>
+    <div id="editFormContent"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="guardarEdicion()">Guardar cambios</button>
+      <button class="btn btn-danger" onclick="eliminarAlbaranModal()">Eliminar albarán</button>
+      <button class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR PRODUCTO -->
+<div class="modal-overlay" id="modalEditarProducto">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-title">Editar Producto</div>
+    <div class="form-group" style="margin-bottom:1rem">
+      <label>Código</label>
+      <input type="text" id="ep_codigo">
+    </div>
+    <div class="form-group" style="margin-bottom:1rem">
+      <label>Nombre</label>
+      <input type="text" id="ep_nombre">
+    </div>
+    <div class="form-group" style="margin-bottom:1rem">
+      <label>Peso neto (kg)</label>
+      <input type="number" id="ep_peso" step="0.001">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="guardarEdicionProducto()">Guardar cambios</button>
+      <button class="btn btn-secondary" onclick="cerrarModalProducto()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <script>
-// CONFIGURACIÓN API
-const API_KEY = "TU_API_KEY_DE_GEMINI"; // <--- CAMBIA ESTO POR TU KEY
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+// ===================== DATOS =====================
+const CLIENTES_DB = [{"code":"3","name":"MARTIN BERASATEGUI RESTAURAD"},{"code":"4","name":"WALTER SCHENKEL"},{"code":"5","name":"SEPEHR DAD CAVIAR GMBH"},{"code":"6","name":"VASIONSE S.L."},{"code":"7","name":"NUEVAS INVERSIONES THE PEREZ"},{"code":"8","name":"EL PALADAR, JAMONERIA&DELICA"},{"code":"9","name":"COCO GOURMET CB"},{"code":"10","name":"CERVECERA VEGA BAJA S.L."},{"code":"11","name":"ROBERTO ALONSO PALACIOS"},{"code":"12","name":"SALOME CANEQUE"},{"code":"13","name":"TRANSPORTES FRIGORIFICOS VIL"},{"code":"14","name":"MARIO BERNARDOS HELLMANN"},{"code":"15","name":"MIGUEL OSORIO DELGADO"},{"code":"16","name":"GAONA JARDIN S.L."},{"code":"17","name":"CLIENTES VARIOS- PROMOCIONES"},{"code":"18","name":"PINCHOMANIA S.L."},{"code":"19","name":"CHRISTER OLEBY"},{"code":"20","name":"BRIGITTE ELSNER DE GILLET, S"},{"code":"21","name":"MERCEDES YOLDI LEDO"},{"code":"22","name":"ANGULAS Y MARISCOS ROSET, S."},{"code":"23","name":"FUENMAYOR COMERCIAL, S.L."},{"code":"24","name":"ALVARO SEARLE JOMSE"},{"code":"25","name":"DELIKATHA"},{"code":"26","name":"CASA NICOLASA, S.L."},{"code":"27","name":"BELINDA MUÑOZ FERNANDEZ"},{"code":"28","name":"GUERMA, S.L."},{"code":"29","name":"ESPERANZA MARTINEZ PRIETO"},{"code":"30","name":"LOURDES BLANCO"},{"code":"31","name":"MANUEL SERRANO GARCIA S.L.U"},{"code":"32","name":"GONDE 13 S.L."},{"code":"33","name":"BAR TXEPETXA, S.L."},{"code":"34","name":"ALTONAER KAVIAR IMPORT HAUS"},{"code":"35","name":"DELIMARKET OU"},{"code":"36","name":"CARNICAS SANTO ESTEVO S.L."},{"code":"37","name":"BEATRIZ LUZURIAGA"},{"code":"38","name":"WELLPRODS OU"},{"code":"39","name":"IBEROCHINA"},{"code":"40","name":"AHUMADOS Y CONSERVAS ANGEL"},{"code":"41","name":"PEREZ SAURA HNOS 2003 S.L."},{"code":"42","name":"DISTRIBUCIONES PLATA GRANADA"},{"code":"43","name":"CENIP BALEAR S.A."},{"code":"44","name":"ZAMPATORI, S.L."},{"code":"45","name":"QUINTA DO SALMAO. COMERCIO DE PEI"},{"code":"46","name":"REPRESENTACIONES MAYAYO"},{"code":"47","name":"ULTRAMARINE FOOD S.A."},{"code":"48","name":"MAEDOR TRES S.L."},{"code":"50","name":"ZUBEROA JATETXEA, S.L."},{"code":"51","name":"SEGUNDO OLANO, S.L."},{"code":"52","name":"SEBASTIAN POLEY COTO"},{"code":"53","name":"NATALIA ESPECIALIDADES S.L."},{"code":"54","name":"SALAZONES MOTI S.L."},{"code":"59","name":"JUDIT PRADO RAMIREZ (PESCAERIA EUGENIA)"},{"code":"60","name":"FRIDDA DORSCH, SL."},{"code":"65","name":"NUEVA COCINA DEL FOGON DEL SALVAD"},{"code":"70","name":"CORLA, S.L."},{"code":"73","name":"GILOLO, S.A. - REST.BARROS"},{"code":"87","name":"DISTRIBUCIONES OTORDU, S.L."},{"code":"95","name":"COMERCIAL GEGARRI, S.L."},{"code":"98","name":"ATLAS GOURMET, S.L."},{"code":"112","name":"FERNANDEZ VALCARCEL ALVARO"},{"code":"116","name":"KOLDO ROYO, S.A."},{"code":"129","name":"CAVIAR INVESTMENT, S.L."},{"code":"132","name":"SORIADIS, S.L."},{"code":"133","name":"EUROHIPER DISTRIBUCION, S.A.LECLE"},{"code":"171","name":"EXCLUSIVAS IMS, S.L."},{"code":"176","name":"DISTRIBUIDORA AURELLANO, S.L."},{"code":"184","name":"BOCAPIZZA ZIZUR, S.L."},{"code":"188","name":"DISTRIBUCIONES GUILLÉN, S.L."},{"code":"202","name":"CYS ALMENTACION Y DERIVADOS, S.L."},{"code":"273","name":"IRUÑADIS S.L. (LECRER IRUÑA)"},{"code":"274","name":"SIPRADO, S.A."},{"code":"281","name":"DISPASA ALIMENTARIA, SL."},{"code":"284","name":"CONCHITA BERECIARTÚA ARREGUI"},{"code":"286","name":"PALAMOS MAR, S.L."},{"code":"287","name":"COMERCIAL REDAMAR, S.L."},{"code":"291","name":"LIZATXA, S.L. - REST. ALAMEDA"},{"code":"323","name":"COMERCIAL SEGOFOOD, SL."},{"code":"324","name":"AHUMADOS MARE NOSTRUM S.L."},{"code":"327","name":"REYES Y VARON, S.L."},{"code":"330","name":"MALAGA DELICIAS, S.L."},{"code":"343","name":"LUIS MANUEL TOVARUELA PEREZ"},{"code":"345","name":"REST.TIPICO LAS REJAS, S.L."},{"code":"354","name":"AHUMADOS FISH LINE, S.L."},{"code":"362","name":"CELEDON.EMBUTIDOS LA MIRANDESA, S"},{"code":"367","name":"TERESA TRIFOL CENICERO"},{"code":"368","name":"SOLBES GOURMET, SL."},{"code":"373","name":"CARBAJO MASERO, S.L."},{"code":"374","name":"AÑADAS DE MURCIA, S.L."},{"code":"375","name":"PACIFIC FISH, S.L. UNIP,"},{"code":"377","name":"LUIS MOLINA HIDALGO,"},{"code":"392","name":"PIERGA, S.A."},{"code":"395","name":"OVAPISCIS, S.A."},{"code":"397","name":"M.A. DISTRIBUCIONES,"},{"code":"398","name":"HIALSA MENORCA, S.A."},{"code":"399","name":"CENTRAL DE CARNES MADRID NORTE, S"},{"code":"404","name":"RESTAURANTE ZALDIARAN, S.L"},{"code":"413","name":"PESCADERIA EUGENIA, S.L."},{"code":"415","name":"ATLANTERRA MERCA, S.L"},{"code":"417","name":"EUROSERVICIOS VALERO, SL."},{"code":"426","name":"LOS ALCALAREÑOS 2010 S.L."},{"code":"429","name":"DELICAVIAR, S.L."},{"code":"431","name":"OLABERRIA AUZOA, S.L."},{"code":"432","name":"PACIFIC FISH, S.L. UNIP,"},{"code":"479","name":"SALAZONES GARRE, S.L."},{"code":"480","name":"CALVO MORENO JULIO"},{"code":"481","name":"P.I. EL ZARZALEJO, S.A."},{"code":"484","name":"COOPERATIVA DE HOSTELERIA"},{"code":"489","name":"FERRER BADIA, S.A"},{"code":"490","name":"LA SELECTA C.GASTRONOMIQUES,"},{"code":"499","name":"GASTROMUR DE ALIMENTACION S.L."},{"code":"507","name":"TROS DE SORT, S.L."},{"code":"511","name":"COCINADOS INDUSTRIALES CONSERVADO"},{"code":"514","name":"FOIE GRAS Y MAS, SL."},{"code":"519","name":"SALAZONES SEMOSA, S.L."},{"code":"520","name":"ANGULAS AGUINAGA S.A.U."},{"code":"523","name":"COMERCIAL PULET, S.L."},{"code":"524","name":"RESTAURANTE LA COCINA DE MARIA LU"},{"code":"525","name":"CASUAL ITEMS 5000 S.L"},{"code":"541","name":"LA CORUÑESA, S.A."},{"code":"544","name":"NUEVA DESPENSA"},{"code":"559","name":"SERVEIS DE COMUNICACIO EMPRESA"},{"code":"565","name":"LARRAÑAGA CORONA PATXI"},{"code":"570","name":"ANCHOAS MATIAS LOPEZ, SL."},{"code":"571","name":"COMERCIAL NORTE 5, S.A."},{"code":"573","name":"ELADIO URANGA"},{"code":"584","name":"JUAN FRANCISCO SOLER CANO"},{"code":"593","name":"WORLD HAMPERS XXI, S.L."},{"code":"594","name":"YEMAS DE SANTA TERESA, S.A."},{"code":"598","name":"SYBARYT, S.L."},{"code":"613","name":"MIKEL ARRIETA OLASAGASTI"},{"code":"619","name":"TECOTRES, S.L."},{"code":"624","name":"TODOCATERING OLID SLL"},{"code":"625","name":"P3 SEGURIDAD INTEGRAL, SL"},{"code":"631","name":"NEW CONTA PAMPLONA, S.L."},{"code":"634","name":"LUKAS BENTA BERRI S.L."},{"code":"635","name":"DELICASS SDAD DE ALIMENTACION,"},{"code":"636","name":"JOSE LUIS GONZALEZ FLORES"},{"code":"639","name":"MIGUEL SAURA GARCIA"},{"code":"642","name":"ALCAMPO PLATAFORMA FRIO MADRID"},{"code":"646","name":"ALCAMPO PLATAFORMA FRIO BARCEL"},{"code":"648","name":"GUZMÁN GASTRONOMÍA, S.L."},{"code":"649","name":"LUKAS ARDOTEGIA, S.L."},{"code":"654","name":"SELECTUM, VANGUARDIA Y TRADICI"},{"code":"657","name":"COMERCIAL ACUICULTURA DELAMAR,"},{"code":"658","name":"AGROCOMERCIAL URANZU, SL."},{"code":"674","name":"JUAN ANTONIO GOMEZ SORIANO"},{"code":"679","name":"ALIMENTACIÓN MONTSERRAT, S.L."},{"code":"691","name":"MATITHOR IBERICA, S.L."},{"code":"694","name":"GENÉTICA Y OVAS"},{"code":"711","name":"LUIS TOBARUELA PEREZ"},{"code":"718","name":"MENDIBILE JATETXEA, S.L."},{"code":"722","name":"FERNANDO FUERTES FUERTES"},{"code":"726","name":"EUROANCHOAS CONSERVERA MADRILEÑA,"},{"code":"757","name":"HOTALPA, S.L."},{"code":"758","name":"MONTEFER, S.L."},{"code":"770","name":"NOE CONCEPTOS ESPECIALES, S.L."},{"code":"776","name":"RESTAURANTE LAZKAO ETXE"},{"code":"778","name":"HOTEL CIUDAD DE CENICERO"},{"code":"799","name":"FRISORIA, S.A."},{"code":"803","name":"DISTRIBUCIONES JESUS PALENZUELA S"},{"code":"804","name":"RESTAURANTE NICOLÁS, S.L."},{"code":"806","name":"COMERCIAL ZIGANDA"},{"code":"810","name":"FRIOLISA"},{"code":"814","name":"JET EXTRAMAR, S.L."},{"code":"817","name":"COMERCIAL ASTORGA, S.L."},{"code":"819","name":"NATURIX INICIATIVAS S.L."},{"code":"820","name":"SALMODIS, S.A. LE CREN"},{"code":"821","name":"SELECTOS DE CASTILLA, S.A."},{"code":"823","name":"VICTOR GONZALEZ LEIVAS"},{"code":"827","name":"SUPERMERCADOS SABECO S.A. (MIRANDA)"},{"code":"828","name":"DALVIDIS, S.L."},{"code":"831","name":"MONTAL"},{"code":"835","name":"TUDETEKA S.L."},{"code":"837","name":"LLORENC CERDA MORA, C.B."},{"code":"838","name":"AHUMADOS SABAL, S.L."},{"code":"844","name":"URDICIAIN COMERCIAL DE ALIMENTACI"},{"code":"847","name":"ACUITEC S.L."},{"code":"848","name":"ESTHER BOUSCAUT. D.E.F.I."},{"code":"849","name":"MONTAL ALIMENTACION SL"},{"code":"852","name":"GARCIA GARCIA MANUEL ALBERTO"},{"code":"855","name":"PEDRO PAMIES BERENGUER"},{"code":"864","name":"SUPER AMARA S.L."},{"code":"865","name":"ANTIGUO AMARA S.L."},{"code":"866","name":"PAYMENT S.L."},{"code":"867","name":"CASH ZIAKO S.L."},{"code":"868","name":"CASH ZIAKO S.L."},{"code":"869","name":"PAYMENT S.L."},{"code":"870","name":"EL CORTE INGLES, S.A."},{"code":"871","name":"DELICIOUS FOOD HOUSE"},{"code":"872","name":"ALVARO MANSO GARCIA"},{"code":"873","name":"TORRALLARDONA CANADEL PEDRO"},{"code":"874","name":"ALVAREZ VITERI ESTER"},{"code":"875","name":"PESCADOS GARPESCA S.L."},{"code":"876","name":"IPEASA, CARLOS SAN MIGUEL."},{"code":"880","name":"BOTILLERIA Y FOGON SACHA S.A"},{"code":"885","name":"TRANSRECO, S.L."},{"code":"888","name":"JOSE CHUECA MALO"},{"code":"890","name":"LA BACALADERA S.A.U."},{"code":"891","name":"CARBADIS S.L."},{"code":"892","name":"HOTEL KEMPINSKI ESTEPONA"},{"code":"893","name":"GELPEIXE ALIMENTOS CONGELADOS S.A"},{"code":"894","name":"CELLER JOSEP M FERRET S.L."},{"code":"895","name":"MANUEL MORENO ESTUDILLO"},{"code":"898","name":"NICHOLAS ANTONIOS"},{"code":"900","name":"SUPERELCO S.L."},{"code":"901","name":"JAMONES MEDITERRANEA S.L."},{"code":"902","name":"PÊCHERIES OCEANIC FISHERIES INC."},{"code":"905","name":"RESTAURANTE Q-LINARA"},{"code":"906","name":"COMERCIAL PINAMAS S.L."},{"code":"909","name":"RESTAURANTE DOVELA"},{"code":"910","name":"RESTAURANTE IÑIGO LAVADO"},{"code":"945","name":"UNIALCO S.L."},{"code":"946","name":"HIPER COSTA ESMERALDA S.L."},{"code":"947","name":"HIPER COSTA ESMERALDA S.L."},{"code":"948","name":"HIPER COSTA ESMERALDA S.L."},{"code":"950","name":"SUCESORES DE CARLOS MORENO, S.L."},{"code":"951","name":"ALFONSO CAMPILLO FERNANDEZ"},{"code":"953","name":"UVESCAYA S.L."},{"code":"955","name":"SEVEN OCEANS SEAFOOD DENMARK, LTD"},{"code":"958","name":"DPAP S.A.S"},{"code":"960","name":"IBERCOMPRA S.A."},{"code":"962","name":"JUROGE S.L."},{"code":"963","name":"LUIS SAEZ VIDAL"},{"code":"965","name":"RIVERFRESH IREGUA SLU"},{"code":"968","name":"JUAN TORRES RAMON"},{"code":"971","name":"DIALPACK S.L."},{"code":"974","name":"RESTAURANTE LULIUM"},{"code":"975","name":"LITÁN S.L."},{"code":"978","name":"LUGA SABORES S.L."},{"code":"979","name":"JOSE MARIA MARTIN GARCIA"},{"code":"980","name":"FISHGUY"},{"code":"981","name":"COMUNIACION EMPRESARIAL"},{"code":"982","name":"ROSASGOURMET S.L."},{"code":"984","name":"VENSY ESPAÑA S.A"},{"code":"985","name":"SALAZONARTE,CB."},{"code":"986","name":"RESTAURANTE LA CABIERA, S.C."},{"code":"987","name":"ANTONIO LORENZO LUSQUIÑOS"},{"code":"988","name":"MARIA AURORA ARIAS GONZALEZ"},{"code":"990","name":"PURPLE SEAGULL"},{"code":"991","name":"AHUMADOS GIMAR S.L."},{"code":"992","name":"GOURMET TRADE S.A"},{"code":"993","name":"CONCEPCION RUIZ RUBIO"},{"code":"994","name":"CASTANYE DANIEL SL."},{"code":"995","name":"ZAMODIET S.A"},{"code":"996","name":"DANIEL CALVO SOLA"},{"code":"998","name":"KAVIARI S.A.S"},{"code":"999","name":"PISCIFACTORIA ASTURIANA S.L."},{"code":"1002","name":"CHINA IMPERIAL S.L."},{"code":"1003","name":"101 PALADAR S.L.U"},{"code":"1004","name":"CELLA VINARIUM"},{"code":"1005","name":"ASADOR MUTILVA"},{"code":"1006","name":"ASABRAHAM RESTAURACION SL."},{"code":"1007","name":"GLASINOVA S.L."},{"code":"1008","name":"ZARENDOM LEBENSMITTEL GMBH"},{"code":"1009","name":"PISCEO S.L.U"},{"code":"1015","name":"AHUMADOS NORDFISH S.L"},{"code":"1016","name":"PISZOLLA, S.L."},{"code":"1025","name":"INTERNACIONAL FAIR OF BUSINESS, S"},{"code":"1026","name":"SAN LAMBERTO 2000, S.L."},{"code":"1027","name":"LAFUENTE ARCHE, JESUS ANGEL (MALVASIA)"},{"code":"1031","name":"GOURMETHOUSE OU"},{"code":"1044","name":"EXPORT-IMPORT DELICATESSEN BUSI"},{"code":"1081","name":"MACIEN S.L.L"},{"code":"1082","name":"GRUP IGLESIAS BARCIELA, S.L.U."},{"code":"1089","name":"CAT.SANTA INES S.L."},{"code":"1091","name":"MILO CANARIAS ALIMENTACION S.L."},{"code":"1092","name":"MAEDOR TRES S.L."},{"code":"1093","name":"SARA ROLDAN"},{"code":"1095","name":"LA TASCA DE ANA S.L."},{"code":"1096","name":"MADRID D ABASTEC. Y DITR. ALIME"},{"code":"1100","name":"CONSERVAS ISLAS CIES, S.L."},{"code":"1101","name":"HIJOS DE JUAN NAVARRO S.L."},{"code":"1102","name":"JORGE GOMEZ VELEZ"},{"code":"1104","name":"PESCADOS Y MARISCOS R.M. BARRIO"},{"code":"1105","name":"MONTE ESQUEIRO EVENTOS, S.L.U"},{"code":"1106","name":"ATLANTIC FISH SPAIN"},{"code":"1107","name":"HERMANOS MAYO CABRERA S.L."},{"code":"1108","name":"NAGREEN GROUP"},{"code":"1109","name":"CARBALLEIRA HOSTELERIA S.L."},{"code":"1110","name":"P. MORALES Y GODOY S.L."},{"code":"1111","name":"PEIXOS J.ARROM"},{"code":"1112","name":"ESTACION DE SERVICIO EL JARDIN"},{"code":"1113","name":"GESTORA INMOBILIARIA CITI-RURAL"},{"code":"1114","name":"MARMITA BARES S.L."},{"code":"1115","name":"TERMOLOGISTIC OU"},{"code":"1116","name":"RICARDO FUENTES E HIJOS SALAZON"},{"code":"1118","name":"EL HUERTO DE TONI S.L"},{"code":"1119","name":"MARISCOS UGARTE"},{"code":"1120","name":"SUPERMERCADOS UNICO"},{"code":"1121","name":"TRANSPORTES FRIGORIFICOS VILLAR"},{"code":"1122","name":"CAT SANTA INES S.L."},{"code":"1123","name":"DISTRIBUCIONES JESUS PALENZUELA"},{"code":"1124","name":"COPESCO SEFRISA"},{"code":"1125","name":"GESTORA INMOBILIARIA CITI-RURAL"},{"code":"1126","name":"ATXEGA PESCADOS Y MARISCOS S.A"},{"code":"1127","name":"MENCIA HOSTELERIA S.L."},{"code":"1128","name":"GALLINERO RD 2010 S.L."},{"code":"1129","name":"RESTAURANTE MANSO, S.L."},{"code":"1130","name":"API-MANCHA S.L."},{"code":"1131","name":"PESCADOS PALOFRA S.L."},{"code":"1132","name":"LONCHEADOS S.L."},{"code":"1133","name":"MARIA TERESA CABO VIDAL"},{"code":"1135","name":"GRUPO VIDELA S.A"},{"code":"1136","name":"ALEIX BELTRAN RONCHERA"},{"code":"1137","name":"JOSE ANTONIO GONZALEZ VILLAR"},{"code":"1138","name":"ANNAPAU 2001 S.L."},{"code":"1139","name":"VALLE DEL PAZO S.L."},{"code":"1140","name":"JAVIER MUÑOZ PARRA"},{"code":"1141","name":"MUGALA INNOVA S.L."},{"code":"1142","name":"HNOS.SAEZ ALFARO S.L."},{"code":"1143","name":"ARKETYPO VEINTIUNO S.L."},{"code":"1144","name":"ZONA NORTE GOURMET S.L."},{"code":"1145","name":"AQUI SANTONA FRANQUICIAS S.L."},{"code":"1146","name":"K- DELEITE 2016 S.L."},{"code":"1147","name":"JAUMA RAFOLS TERMES"},{"code":"1148","name":"DISTRIBUCIONES GARCIA MORENO S.L."},{"code":"1149","name":"KENATHMAR INVESTEMENT SRL"},{"code":"1150","name":"FELIX NOVA GARCIA"},{"code":"1151","name":"CARMEN GONZALEZ YAGO"},{"code":"1152","name":"JOSE YAÑEZ SEOANE"},{"code":"1153","name":"UCALSA"},{"code":"1154","name":"AHUMADOS FERNANDEZ MOLINA S.L."},{"code":"1155","name":"PIRINEOS EXDIM S.L."},{"code":"1156","name":"HOTEL CUIDAD DE UBEDA S.L."},{"code":"1157","name":"GERARDO RODRIGUEZ MARTIN"},{"code":"1158","name":"INDUSTRIA 36 S.C"},{"code":"1159","name":"EDUARDO MARTIN PITA"},{"code":"1160","name":"LUYREST S,L."},{"code":"1161","name":"OSCAR MARTIN LOPEZ NAVARRO"},{"code":"1162","name":"UMAMIS COLLECTION"},{"code":"1163","name":"SERVYTEM GLOBAL S.L."},{"code":"1164","name":"PESCADOS BALAZOTE, S.L."},{"code":"1166","name":"HERMANOS LOPEZ PARDO, S.L."},{"code":"1167","name":"ZONA NORTE GOURMET S.L."},{"code":"1168","name":"MARINE FOOD & FIND FOOD S.L"},{"code":"1169","name":"LOLA RUIZ POSTRES"},{"code":"1171","name":"ALBERTO BALADA RIUS"},{"code":"1173","name":"PESCADOS Y MARISCOS AMPOSTA S.A."},{"code":"1174","name":"EL CONCHEL ORIGINAL FOOD S.A."},{"code":"1175","name":"MARINE FOOD & FIND FOOD S.L"},{"code":"1177","name":"SERRANO ALIMENTACION S.A."},{"code":"1178","name":"SUPERMERCADOS SABECO (ZARAGOZA)"},{"code":"1179","name":"SUPERMERCADOS SABECO (ALCALA DE HENARES)"},{"code":"1180","name":"HERMANOS LOPEZ PARDO S.L."},{"code":"1182","name":"GRANJA NUESTRA SEÑORA REMELLURI"},{"code":"1183","name":"PESCADOS BIZKAIMAR S.L."},{"code":"1186","name":"FERNADO ZABAZO RACIONERO"},{"code":"1187","name":"DIFERSA S.L."},{"code":"1188","name":"NAPOLEON DO NACIMIENTO SILVA"},{"code":"1189","name":"ANDREA GONZALEZ GIL"},{"code":"1190","name":"WORLD FRUITS COMPANY S.L."},{"code":"1191","name":"GAMMAALTA 300 S.L."},{"code":"1192","name":"ROSALIA GOMEZ ORTEGA"},{"code":"1194","name":"IÑIGO SAINZ DE MURRIETA"},{"code":"1195","name":"JOSE ANTONIO NAVARRO GRAU"},{"code":"1197","name":"ENDINAVA SAT N 424"},{"code":"1198","name":"VIRGINIE ROGE"},{"code":"1199","name":"ANDAMABI RSTE. BISTRO"},{"code":"1200","name":"ENRIQUE MENDEZ GONZALEZ"},{"code":"1201","name":"CUINA TALLER 2008 SL"},{"code":"1202","name":"ATILANO JIMENEZ POZUELO"},{"code":"1203","name":"TERMOLOGISTIC (FOODTRADING)"},{"code":"1205","name":"SAGRA GOURMET SOLUTIONS"},{"code":"1207","name":"SERVISANYEN S.L"},{"code":"1208","name":"HOTEL CAÑITAS"},{"code":"1209","name":"ONINTZA ETXEBERRIA"},{"code":"1210","name":"ALIME. BEBIDAS GOURMAND GASTRONOMIA"},{"code":"A","name":"ABONO"},{"code":"D","name":"DEVOLUCION"},{"code":"I","name":"IBON"},{"code":"N","name":"NULO"},{"code":"O","name":"OBSEQUIO VARIOS"},{"code":"OT","name":"OBSEQUIO TRABAJADORES"},{"code":"R","name":"RAPEL"},{"code":"V","name":"VARIOS"},{"code":"Z","name":"VENTAS ZARZALEJO"},{"code":"1213","name":"ORME B&G RESTAURACION"},{"code":"1216","name":"CBCN 2021 S,L COMPARTIR BARCELONA"},{"code":"1215","name":"SALONES ALEGRIA"},{"code":"1218","name":"HORECA-AGENDID OU"},{"code":"1220","name":"VERONICA BEZRUKOVA"},{"code":"1221","name":"MARICRUZ CANOVAS LAZARO"},{"code":"1225","name":"AGROPECUARIA ECO. SIERRA DE ALCARAZ"},{"code":"1227","name":"PESDADOS ALONDRA S.L"},{"code":"1228","name":"DIVERSO-MARE S.L"},{"code":"1229","name":"UNIVERSO LOCAL S.L."},{"code":"1231","name":"ESPECIFICS 2000 S.L."},{"code":"1232","name":"ATCCIO MAR S.L."},{"code":"1233","name":"AGENCIA CULTURAL Y TURISTICA ALCARAZ"},{"code":"1234","name":"VIUDA CAYO SAINZ S.L."},{"code":"1235","name":"EXCLUSIVAS BARRIOS S.L."},{"code":"1236","name":"MUD WINE BAR S.L."},{"code":"1237","name":"AQUI SANTOÑA S.L."},{"code":"1238","name":"MARCO PESCA IMPORT S.L."},{"code":"1239","name":"LA CHAINE CADENAS S.L."},{"code":"1240","name":"FADIS ALIMENTACION S.L."},{"code":"1241","name":"PURIFICACION MOTA LOPEZ (PESCADOS ANDRADES)"},{"code":"1242","name":"QUINTA DE JUGAIS. LDA."},{"code":"1230","name":"PESCADOS BIZCAIMAR SLU"},{"code":"1244","name":"NEW-CONTA NAVARRA"},{"code":"1245","name":"EL CONCHEL D'GUSTO SLU"},{"code":"1246","name":"UNIALCO (CANTABRIA)"},{"code":"1247","name":"UNIALCO (MADRID)"},{"code":"1256","name":"DIEGO MAURICIO COBO SLAMANCA KARDAMOMUN"},{"code":"1263","name":"TRAGATÁ MALAGA S.L."},{"code":"1264","name":"PESCADOS Y MARISCOS GALMA S.L."},{"code":"1271","name":"ALCAMPO PLATAFORMA FRI TOLEDO"},{"code":"1272","name":"GUK GESTION S.L."},{"code":"1273","name":"FRANCISCO BERBEL HERNANDEZ E HIJOS S.L"},{"code":"1275","name":"VICENTE SOLER CARMONA"},{"code":"1276","name":"ODYSSEY ALCAIDESA S.L."},{"code":"1277","name":"JOAQUIN MENENDEZ FERNANDEZ"},{"code":"1274","name":"BELLAPESCA EUROPA S.L"},{"code":"1278","name":"BISTROKARDAMOMUM SL"},{"code":"1279","name":"ANGEL ANDRADES MOTA"},{"code":"1280","name":"ICAR LA ALONDRA SL"},{"code":"1281","name":"JOSE VICENTE RUIZ GRACIA"}];
+
+const PRODUCTOS_DEFAULT = [
+  {codigo:'HTC50', nombre:'HT. Calter 50grs', peso:0.05, activo:true},
+  {codigo:'HTC100', nombre:'HT. Calter 100grs', peso:0.1, activo:true},
+  {codigo:'HTC325', nombre:'HT. Calter 325grs', peso:0.325, activo:true},
+  {codigo:'HTD50', nombre:'HT. Dorada 50grs', peso:0.05, activo:true},
+  {codigo:'HTD100', nombre:'HT. Dorada 100grs', peso:0.1, activo:true},
+  {codigo:'HTD325', nombre:'HT. Dorada 325grs', peso:0.325, activo:true},
+  {codigo:'HTD925', nombre:'HT. 925grs', peso:0.925, activo:true},
+  {codigo:'HS50', nombre:'H. Salmon 50grs', peso:0.05, activo:true},
+  {codigo:'HS100', nombre:'H. Salmon 100grs', peso:0.1, activo:true},
+  {codigo:'HS325', nombre:'H. Salmon 325grs', peso:0.325, activo:true},
+  {codigo:'ERIZO', nombre:'Yemas Erizo 90grs', peso:0.09, activo:true},
+  {codigo:'LT450', nombre:'Lomos Trucha 450grs', peso:0.45, activo:true},
+  {codigo:'LT2000', nombre:'Lomos Trucha 2kg', peso:2, activo:true},
+  {codigo:'CONG', nombre:'Huevas Congeladas', peso:1, activo:true},
+];
+
+// ===================== STATE =====================
+let state = {
+  productos: JSON.parse(localStorage.getItem('cal_productos') || 'null') || PRODUCTOS_DEFAULT,
+  stockInicial: JSON.parse(localStorage.getItem('cal_stockInicial') || '{}'),
+  albaranes: JSON.parse(localStorage.getItem('cal_albaranes') || '[]'),
+};
+let editIdx = null;
+
+function save() {
+  localStorage.setItem('cal_productos', JSON.stringify(state.productos));
+  localStorage.setItem('cal_stockInicial', JSON.stringify(state.stockInicial));
+  localStorage.setItem('cal_albaranes', JSON.stringify(state.albaranes));
+}
+
+// ===================== INIT =====================
+window.onload = () => {
+  initClienteDatalist();
+  initMesRapido();
+  renderTablaProductos();
+  renderStockEdit();
+  renderStockDisplay();
+  renderTablaAlbaranes();
+  initBuscarSelect();
+  initClock();
+};
+
+function initClock() {
+  const update = () => {
+    const d = new Date();
+    document.getElementById('clock').textContent = d.toLocaleDateString('es-ES') + ' · ' + d.toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'});
+  };
+  update();
+  setInterval(update, 30000);
+}
+
+function getClientesAll() {
+  const extra = JSON.parse(localStorage.getItem('cal_clientes_extra') || '[]');
+  const overrides = extra.filter(x => x.override);
+  const nuevos = extra.filter(x => !x.override);
+  const base = CLIENTES_DB.map(c => {
+    const ov = overrides.find(x => x.code === c.code);
+    return ov ? { ...c, name: ov.name } : c;
+  });
+  return [...base, ...nuevos];
+}
+
+function initClienteDatalist() {
+  const todos = getClientesAll();
+  ['clienteList','clienteListInf'].forEach(id => {
+    const dl = document.getElementById(id);
+    if (!dl) return;
+    dl.innerHTML = '';
+    todos.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.name;
+      dl.appendChild(opt);
+    });
+  });
+  const codeDl = document.getElementById('codigoList');
+  if (codeDl) {
+    codeDl.innerHTML = '';
+    todos.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.code;
+      opt.label = c.name;
+      codeDl.appendChild(opt);
+    });
+  }
+}
+
+function renderTablaClientes(filtro) {
+  const todos = getClientesAll();
+  const tbody = document.getElementById('tablaClientes');
+  if (!tbody) return;
+  const f = (filtro || document.getElementById('filtroClientes')?.value || '').toLowerCase();
+  const lista = f ? todos.filter(c => c.name.toLowerCase().includes(f) || c.code.toLowerCase().includes(f)) : todos;
+  tbody.innerHTML = lista.map((c) => {
+    const esExtra = !CLIENTES_DB.find(db => db.code === c.code);
+    const cod = c.code.replace(/'/g, "\'");
+    return `<tr>
+      <td class="mono">${c.code}</td>
+      <td>${c.name}</td>
+      <td>
+        <button class="btn btn-secondary btn-small" onclick="editarCliente('${cod}')">Editar</button>
+        ${esExtra ? `<button class="btn btn-danger btn-small" style="margin-left:0.25rem" onclick="borrarCliente('${cod}')">Borrar</button>` : ''}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filtrarClientes() {
+  renderTablaClientes();
+}
+
+function editarCliente(codigo) {
+  const todos = getClientesAll();
+  const c = todos.find(x => x.code === codigo);
+  if (!c) return;
+  const nuevoNombre = prompt('Nombre del cliente:', c.name);
+  if (!nuevoNombre || !nuevoNombre.trim()) return;
+  const extra = JSON.parse(localStorage.getItem('cal_clientes_extra') || '[]');
+  const enDB = CLIENTES_DB.find(x => x.code === codigo);
+  if (enDB) {
+    // Si está en la DB original, lo añadimos a extra con el nuevo nombre y marcamos override
+    const existeExtra = extra.find(x => x.code === codigo);
+    if (existeExtra) existeExtra.name = nuevoNombre.trim().toUpperCase();
+    else extra.push({ code: codigo, name: nuevoNombre.trim().toUpperCase(), override: true });
+  } else {
+    const e = extra.find(x => x.code === codigo);
+    if (e) e.name = nuevoNombre.trim().toUpperCase();
+  }
+  localStorage.setItem('cal_clientes_extra', JSON.stringify(extra));
+  initClienteDatalist();
+  renderTablaClientes();
+}
+
+function borrarCliente(codigo) {
+  if (!confirm('¿Seguro que quieres borrar este cliente?')) return;
+  let extra = JSON.parse(localStorage.getItem('cal_clientes_extra') || '[]');
+  extra = extra.filter(x => x.code !== codigo);
+  localStorage.setItem('cal_clientes_extra', JSON.stringify(extra));
+  initClienteDatalist();
+  renderTablaClientes();
+}
+
+function agregarCliente() {
+  const codigo = document.getElementById('cli_codigo').value.trim();
+  const nombre = document.getElementById('cli_nombre').value.trim().toUpperCase();
+  if (!codigo || !nombre) { alert('Código y nombre son obligatorios.'); return; }
+  const todos = getClientesAll();
+  if (todos.find(c => c.code === codigo)) { alert('Ya existe un cliente con ese código.'); return; }
+  const extra = JSON.parse(localStorage.getItem('cal_clientes_extra') || '[]');
+  extra.push({ code: codigo, name: nombre });
+  localStorage.setItem('cal_clientes_extra', JSON.stringify(extra));
+  initClienteDatalist();
+  renderTablaClientes();
+  document.getElementById('cli_codigo').value = '';
+  document.getElementById('cli_nombre').value = '';
+  alert('✓ Cliente añadido correctamente.');
+}
+
+// ===================== NAV =====================
+function showPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'stock') { renderStockEdit(); renderStockDisplay(); }
+  if (name === 'listado') renderTablaAlbaranes();
+  if (name === 'productos') renderTablaProductos();
+  if (name === 'buscar') initBuscarSelect();
+  if (name === 'clientes') renderTablaClientes();
+}
+
+function abrirFormManual() {
+  document.getElementById('formCard').style.display = 'block';
+  document.getElementById('extractingCard').style.display = 'none';
+  document.getElementById('successCard').style.display = 'none';
+  document.getElementById('alertExtract').innerHTML = '<div class="alert alert-info">✏️ Introduce los datos del albarán manualmente.</div>';
+  resetFormFields();
+}
+
+// ===================== PDF UPLOAD =====================
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type === 'application/pdf') processPDF(file);
+}
+
+const WORKER_URL = 'https://calter-proxy.daniel-calvo79.workers.dev';
 
 async function processPDF(file) {
   if (!file) return;
   document.getElementById('extractingCard').style.display = 'block';
   document.getElementById('formCard').style.display = 'none';
+  document.getElementById('successCard').style.display = 'none';
 
+  const base64 = await fileToBase64(file);
+  
   try {
-    // 1. Extraer texto del PDF
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
-    let fullText = "";
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const content = await page.getTextContent();
-      fullText += content.items.map(item => item.str).join(" ");
-    }
-
-    // 2. Llamar a Gemini
-    const rawResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: `Extrae los siguientes datos de este albarán en formato JSON: numero_albaran, fecha (YYYY-MM-DD), cliente, y una lista de productos con (nombre, cantidad). Texto: ${fullText}` }] }]
-      })
+    const response = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ pdfBase64: base64 })
     });
 
-    const data = await rawResponse.json();
-    const textResponse = data.candidates[0].content.parts[0].text;
-    const jsonStr = textResponse.match(/\{[\s\S]*\}/)[0];
-    const albaran = JSON.parse(jsonStr);
-
-    // 3. Rellenar formulario
-    document.getElementById('f_albaran').value = albaran.numero_albaran || '';
-    document.getElementById('f_fecha').value = albaran.fecha || '';
-    document.getElementById('f_cliente').value = albaran.cliente || '';
+    const data = await response.json();
+    const clean = (data.text || '').replace(/```json|```/g, '').trim();
+    const extracted = JSON.parse(clean);
     
-    const container = document.getElementById('lineasProducto');
-    container.innerHTML = "";
-    albaran.productos.forEach(p => {
-      container.innerHTML += `
-        <div class="product-line">
-          <input type="text" value="${p.nombre}">
-          <input type="text" value="${p.cantidad}">
-          <input type="text" placeholder="Lote (Manual)">
-          <button class="btn btn-danger btn-small" onclick="this.parentElement.remove()">✕</button>
-        </div>`;
-    });
-
-    document.getElementById('formCard').style.display = 'block';
-  } catch (e) {
-    alert("Error procesando: " + e.message);
-  } finally {
     document.getElementById('extractingCard').style.display = 'none';
+    populateForm(extracted);
+
+  } catch(err) {
+    console.error('Error extrayendo PDF:', err);
+    document.getElementById('extractingCard').style.display = 'none';
+    document.getElementById('formCard').style.display = 'block';
+    document.getElementById('alertExtract').innerHTML = `<div class="alert alert-warning">⚠ No se pudo extraer automáticamente. Rellena los datos manualmente.</div>`;
+    resetFormFields();
   }
+}
+
+function fileToBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+function populateForm(data) {
+  document.getElementById('formCard').style.display = 'block';
+  document.getElementById('alertExtract').innerHTML = `<div class="alert alert-success">✓ Datos extraídos del PDF. Revisa y añade los números de lote.</div>`;
+  document.getElementById('f_albaran').value = data.albaran || '';
+  document.getElementById('f_fecha').value = data.fecha || new Date().toISOString().split('T')[0];
+  
+  // Try to match client
+  let clientName = data.cliente || '';
+  let clientCode = '';
+  const cliMatch = CLIENTES_DB.find(c => c.name.toLowerCase().includes(clientName.toLowerCase().substring(0,10)) || clientName.toLowerCase().includes(c.name.toLowerCase().substring(0,10)));
+  
+  // Also try matching by CLI code
+  if (data.codigoCliente) {
+    const codeStr = String(data.codigoCliente).replace('CLI','').replace(/^0+/,'');
+    const codeMatch = CLIENTES_DB.find(c => c.code === codeStr);
+    if (codeMatch) { clientName = codeMatch.name; clientCode = codeMatch.code; }
+    else if (cliMatch) { clientName = cliMatch.name; clientCode = cliMatch.code; }
+  } else if (cliMatch) { clientName = cliMatch.name; clientCode = cliMatch.code; }
+
+  document.getElementById('f_cliente').value = clientName;
+  document.getElementById('f_codigoCliente').value = clientCode;
+
+  // Render product lines
+  renderLineas(data.lineas || []);
+}
+
+function renderLineas(lineas) {
+  const container = document.getElementById('lineasProducto');
+  container.innerHTML = '';
+  lineas.forEach((l, i) => addLineaProducto(l));
+}
+
+let lineaIdx = 0;
+function addLineaProducto(data) {
+  lineaIdx++;
+  const idx = lineaIdx;
+  const container = document.getElementById('lineasProducto');
+  const div = document.createElement('div');
+  div.className = 'product-line';
+  div.id = 'linea-' + idx;
+  div.dataset.idx = idx;
+  
+  const prodOpts = state.productos.filter(p => p.activo).map(p => 
+    `<option value="${p.codigo}" ${data && data.descripcion && data.descripcion.toLowerCase().includes(p.nombre.toLowerCase().split(' ')[2] || '~~~') ? 'selected' : ''}>${p.nombre}</option>`
+  ).join('');
+
+  // Try to auto-match product
+  let matchedCodigo = '';
+  if (data && data.descripcion) {
+    const desc = data.descripcion.toLowerCase();
+    const match = state.productos.find(p => {
+      const n = p.nombre.toLowerCase();
+      if (desc.includes('100') && n.includes('100')) return true;
+      if (desc.includes('325') && n.includes('325')) return true;
+      if (desc.includes('50') && n.includes('50') && !n.includes('325') && !n.includes('925')) return true;
+      if (desc.includes('925') && n.includes('925')) return true;
+      if (desc.includes('erizo') && n.includes('erizo')) return true;
+      if (desc.includes('lomo') && n.includes('lomo')) return true;
+      if (desc.includes('salmon') && n.includes('salmon')) return true;
+      return false;
+    });
+    // Also check marca for calter vs dorada vs salmon
+    if (match) {
+      let codigo = match.codigo;
+      if (data.marca && data.descripcion.toLowerCase().includes('trucha')) {
+        const m = data.marca.toLowerCase();
+        const grams = desc.includes('100') ? '100' : desc.includes('325') ? '325' : desc.includes('50') ? '50' : desc.includes('925') ? '925' : '';
+        if (m.includes('calter') || m.includes('sin marca') === false) codigo = 'HTC' + grams || match.codigo;
+        else if (m.includes('dorada')) codigo = 'HTD' + grams || match.codigo;
+        else if (m.includes('salmon')) codigo = 'HS' + grams || match.codigo;
+      }
+      if (state.productos.find(p => p.codigo === codigo)) matchedCodigo = codigo;
+      else matchedCodigo = match.codigo;
+    }
+  }
+
+  div.innerHTML = `
+    <select onchange="updateLinea(${idx})">
+      ${state.productos.filter(p=>p.activo).map(p => `<option value="${p.codigo}" ${p.codigo===matchedCodigo?'selected':''}>${p.nombre}</option>`).join('')}
+    </select>
+    <input type="number" placeholder="Cajas" value="${data ? (data.cajas||'') : ''}" min="0" oninput="calcUnidades(${idx})">
+    <input type="number" placeholder="Uds/Caja" value="${data ? (data.udsCaja||data.uds_caja||'') : ''}" min="0" oninput="calcUnidades(${idx})">
+    <input type="number" placeholder="Unidades" value="${data ? (data.unidades||'') : ''}" min="0">
+    <input type="text" placeholder="Lote *" style="border-color:var(--warning)">
+    <button class="btn btn-secondary btn-small" onclick="document.getElementById('linea-${idx}').remove()">✕</button>
+  `;
+  container.appendChild(div);
+}
+
+function calcUnidades(idx) {
+  const div = document.getElementById('linea-' + idx);
+  const inputs = div.querySelectorAll('input[type=number]');
+  const cajas = parseFloat(inputs[0].value) || 0;
+  const udsCaja = parseFloat(inputs[1].value) || 0;
+  if (cajas && udsCaja) inputs[2].value = Math.round(cajas * udsCaja);
+}
+
+function resetFormFields() {
+  ['f_albaran','f_fecha','f_cliente','f_codigoCliente'].forEach(id => { document.getElementById(id).value = ''; });
+  document.getElementById('lineasProducto').innerHTML = '';
+  lineaIdx = 0;
+  addLineaProducto();
+}
+
+function resolveClientCode() {
+  const val = document.getElementById('f_cliente').value;
+  const match = CLIENTES_DB.find(c => c.name.toLowerCase() === val.toLowerCase());
+  if (match) document.getElementById('f_codigoCliente').value = match.code;
+}
+
+function resolveClientName() {
+  const val = document.getElementById('f_codigoCliente').value.trim();
+  const match = CLIENTES_DB.find(c => c.code === val);
+  if (match) document.getElementById('f_cliente').value = match.name;
+}
+
+function registrarAlbaran() {
+  const albaran = document.getElementById('f_albaran').value.trim();
+  const fecha = document.getElementById('f_fecha').value;
+  const cliente = document.getElementById('f_cliente').value.trim();
+  const codigoCliente = document.getElementById('f_codigoCliente').value;
+
+  if (!albaran || !fecha || !cliente) {
+    alert('Por favor rellena el número de albarán, fecha y cliente.');
+    return;
+  }
+
+  const lineas = [];
+  document.querySelectorAll('#lineasProducto .product-line').forEach(div => {
+    const sel = div.querySelector('select');
+    const inputs = div.querySelectorAll('input');
+    const codigo = sel.value;
+    const cajas = parseFloat(inputs[0].value) || 0;
+    const udsCaja = parseFloat(inputs[1].value) || 0;
+    const unidades = parseInt(inputs[2].value) || 0;
+    const lote = inputs[3].value.trim();
+    if (unidades > 0) {
+      const prod = state.productos.find(p => p.codigo === codigo);
+      lineas.push({ codigo, nombre: prod ? prod.nombre : codigo, cajas, udsCaja, unidades, lote });
+    }
+  });
+
+  if (lineas.length === 0) { alert('Añade al menos una línea de producto con unidades.'); return; }
+  if (lineas.some(l => !l.lote)) {
+    if (!confirm('Hay líneas sin número de lote. ¿Continuar igualmente?')) return;
+  }
+
+  const reg = { id: Date.now(), albaran, fecha, cliente, codigoCliente, lineas, registrado: new Date().toISOString() };
+  state.albaranes.push(reg);
+  save();
+
+  document.getElementById('formCard').style.display = 'none';
+  document.getElementById('successCard').style.display = 'block';
+  renderStockDisplay();
 }
 
 function resetForm() {
   document.getElementById('formCard').style.display = 'none';
-  document.getElementById('pdfInput').value = "";
+  document.getElementById('extractingCard').style.display = 'none';
+  document.getElementById('successCard').style.display = 'none';
+  document.getElementById('alertExtract').innerHTML = '';
+  resetFormFields();
+  document.getElementById('pdfInput').value = '';
 }
 
-function showPanel(id) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('panel-' + id).classList.add('active');
+// ===================== STOCK =====================
+function calcStock() {
+  const sold = {};
+  state.albaranes.forEach(alb => {
+    alb.lineas.forEach(l => {
+      sold[l.codigo] = (sold[l.codigo] || 0) + (l.unidades || 0);
+    });
+  });
+  const result = {};
+  state.productos.forEach(p => {
+    const inicial = parseInt(state.stockInicial[p.codigo] || 0);
+    const vendido = sold[p.codigo] || 0;
+    result[p.codigo] = { inicial, vendido, actual: inicial - vendido };
+  });
+  return result;
+}
+
+function renderStockEdit() {
+  const grid = document.getElementById('stockEditGrid');
+  grid.innerHTML = '';
+  state.productos.filter(p => p.activo).forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'stock-item';
+    div.innerHTML = `<div class="prod-name">${p.nombre}</div>
+      <input type="number" min="0" value="${state.stockInicial[p.codigo] || 0}" 
+        onchange="state.stockInicial['${p.codigo}']=parseInt(this.value)||0" style="margin-top:0.25rem">`;
+    grid.appendChild(div);
+  });
+}
+
+function guardarStock() {
+  save();
+  renderStockDisplay();
+  alert('✓ Existencias guardadas correctamente.');
+}
+
+function renderStockDisplay() {
+  const grid = document.getElementById('stockDisplay');
+  if (!grid) return;
+  const stock = calcStock();
+  grid.innerHTML = '';
+  state.productos.filter(p => p.activo).forEach(p => {
+    const s = stock[p.codigo] || { actual: 0 };
+    const cls = s.actual <= 0 ? 'zero' : s.actual < 100 ? 'low' : '';
+    const div = document.createElement('div');
+    div.className = 'stock-item ' + cls;
+    div.innerHTML = `<div class="prod-name">${p.nombre}</div>
+      <div class="prod-qty">${s.actual.toLocaleString()}</div>
+      <div class="prod-unit">uds disponibles</div>
+      <div style="font-size:0.7rem;color:var(--text-muted);margin-top:0.25rem">Vendidas: ${(s.vendido||0).toLocaleString()}</div>`;
+    grid.appendChild(div);
+  });
+}
+
+// ===================== LISTADO =====================
+function renderTablaAlbaranes(filtrados) {
+  const albs = filtrados || state.albaranes;
+  const tbody = document.getElementById('tablaAlbaranes');
+  const empty = document.getElementById('listaVacia');
+  tbody.innerHTML = '';
+  if (albs.length === 0) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  
+  const sorted = [...albs].sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+  sorted.forEach(alb => {
+    const totalUds = alb.lineas.reduce((s, l) => s + (l.unidades || 0), 0);
+    const prodsStr = alb.lineas.map(l => `${l.nombre || l.codigo}: <strong>${l.unidades}</strong> uds${l.lote ? ` <span class="badge badge-green">${l.lote}</span>` : ''}`).join('<br>');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="mono">${alb.albaran}</td>
+      <td class="mono">${formatFecha(alb.fecha)}</td>
+      <td>${alb.cliente}</td>
+      <td style="font-size:0.8rem">${prodsStr}</td>
+      <td class="mono">${totalUds}</td>
+      <td class="no-print">
+        <button class="btn btn-secondary btn-small" onclick="abrirEditar(${alb.id})">Editar</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function filtrarListado() {
+  const texto = document.getElementById('filtroTexto').value.toLowerCase();
+  const desde = document.getElementById('filtroDesde').value;
+  const hasta = document.getElementById('filtroHasta').value;
+  
+  const filtered = state.albaranes.filter(a => {
+    const matchTexto = !texto || 
+      a.albaran.toLowerCase().includes(texto) || 
+      a.cliente.toLowerCase().includes(texto) ||
+      a.lineas.some(l => l.lote && l.lote.toLowerCase().includes(texto));
+    const matchDesde = !desde || a.fecha >= desde;
+    const matchHasta = !hasta || a.fecha <= hasta;
+    return matchTexto && matchDesde && matchHasta;
+  });
+  renderTablaAlbaranes(filtered);
+}
+
+function limpiarFiltros() {
+  document.getElementById('filtroTexto').value = '';
+  document.getElementById('filtroDesde').value = '';
+  document.getElementById('filtroHasta').value = '';
+  renderTablaAlbaranes();
+}
+
+// ===================== EDITAR =====================
+function abrirEditar(id) {
+  editIdx = id;
+  const alb = state.albaranes.find(a => a.id === id);
+  if (!alb) return;
+
+  const content = document.getElementById('editFormContent');
+  content.innerHTML = `
+    <div class="form-grid" style="margin-bottom:1rem">
+      <div class="form-group"><label>Nº Albarán</label><input type="text" id="e_albaran" value="${alb.albaran}"></div>
+      <div class="form-group"><label>Fecha</label><input type="date" id="e_fecha" value="${alb.fecha}"></div>
+      <div class="form-group"><label>Cliente</label><input type="text" id="e_cliente" value="${alb.cliente}" list="clienteList"></div>
+    </div>
+    <div style="font-weight:600;font-size:0.82rem;margin-bottom:0.75rem">Líneas de producto</div>
+    <div id="editLineas">
+    ${alb.lineas.map((l, i) => `
+      <div class="product-line" id="editlinea-${i}">
+        <select id="el_prod_${i}">
+          ${state.productos.filter(p=>p.activo).map(p=>`<option value="${p.codigo}" ${p.codigo===l.codigo?'selected':''}>${p.nombre}</option>`).join('')}
+        </select>
+        <input type="number" id="el_cajas_${i}" value="${l.cajas||''}" placeholder="Cajas" min="0">
+        <input type="number" id="el_udsc_${i}" value="${l.udsCaja||''}" placeholder="Uds/Caja" min="0">
+        <input type="number" id="el_uds_${i}" value="${l.unidades||''}" placeholder="Unidades" min="0">
+        <input type="text" id="el_lote_${i}" value="${l.lote||''}" placeholder="Lote" style="border-color:var(--warning)">
+        <button class="btn btn-secondary btn-small" onclick="document.getElementById('editlinea-${i}').remove()">✕</button>
+      </div>`).join('')}
+    </div>`;
+
+  document.getElementById('modalEditar').classList.add('open');
+}
+
+function guardarEdicion() {
+  const alb = state.albaranes.find(a => a.id === editIdx);
+  if (!alb) return;
+  alb.albaran = document.getElementById('e_albaran').value;
+  alb.fecha = document.getElementById('e_fecha').value;
+  alb.cliente = document.getElementById('e_cliente').value;
+  
+  const lineas = [];
+  document.querySelectorAll('#editLineas .product-line').forEach((div, i) => {
+    const idx = div.id.split('-')[1];
+    const codigo = document.getElementById(`el_prod_${idx}`)?.value;
+    const unidades = parseInt(document.getElementById(`el_uds_${idx}`)?.value) || 0;
+    const lote = document.getElementById(`el_lote_${idx}`)?.value || '';
+    const cajas = parseFloat(document.getElementById(`el_cajas_${idx}`)?.value) || 0;
+    const udsCaja = parseFloat(document.getElementById(`el_udsc_${idx}`)?.value) || 0;
+    if (codigo && unidades > 0) {
+      const prod = state.productos.find(p => p.codigo === codigo);
+      lineas.push({ codigo, nombre: prod ? prod.nombre : codigo, cajas, udsCaja, unidades, lote });
+    }
+  });
+  alb.lineas = lineas;
+  save();
+  cerrarModal();
+  renderTablaAlbaranes();
+  renderStockDisplay();
+}
+
+function eliminarAlbaranModal() {
+  if (!confirm('¿Seguro que quieres eliminar este albarán? Se restaurará el stock.')) return;
+  state.albaranes = state.albaranes.filter(a => a.id !== editIdx);
+  save();
+  cerrarModal();
+  renderTablaAlbaranes();
+  renderStockDisplay();
+}
+
+function cerrarModal() {
+  document.getElementById('modalEditar').classList.remove('open');
+  editIdx = null;
+}
+
+// ===================== BUSCAR =====================
+function initBuscarSelect() {
+  const sel = document.getElementById('buscarProducto');
+  sel.innerHTML = '<option value="">Todos los productos</option>';
+  state.productos.filter(p=>p.activo).forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.codigo;
+    opt.textContent = p.nombre;
+    sel.appendChild(opt);
+  });
+}
+
+function buscarPorLote() {
+  const lote = document.getElementById('buscarLote').value.trim().toLowerCase();
+  const prodFiltro = document.getElementById('buscarProducto').value;
+  const card = document.getElementById('resultadosBusqueda');
+  
+  if (!lote) { card.style.display = 'none'; return; }
+  
+  const resultados = [];
+  state.albaranes.forEach(alb => {
+    alb.lineas.forEach(l => {
+      if (l.lote && l.lote.toLowerCase().includes(lote)) {
+        if (!prodFiltro || l.codigo === prodFiltro) {
+          resultados.push({ ...alb, lineaMatch: l });
+        }
+      }
+    });
+  });
+
+  card.style.display = 'block';
+  const content = document.getElementById('resultadosContent');
+  
+  if (resultados.length === 0) {
+    content.innerHTML = '<div class="empty">No se encontraron registros con ese lote.</div>';
+    return;
+  }
+
+  const totalUds = resultados.reduce((s, r) => s + r.lineaMatch.unidades, 0);
+  content.innerHTML = `
+    <div class="alert alert-info" style="margin-bottom:1rem">
+      🔍 <strong>${resultados.length}</strong> albaranes encontrados · <strong>${totalUds}</strong> unidades en total con lote que contiene "<strong>${lote}</strong>"
+    </div>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>Albarán</th><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Lote</th><th>Unidades</th></tr></thead>
+      <tbody>
+      ${resultados.sort((a,b) => new Date(b.fecha)-new Date(a.fecha)).map(r => `
+        <tr>
+          <td class="mono">${r.albaran}</td>
+          <td class="mono">${formatFecha(r.fecha)}</td>
+          <td>${r.cliente}</td>
+          <td>${r.lineaMatch.nombre || r.lineaMatch.codigo}</td>
+          <td><span class="badge badge-green">${r.lineaMatch.lote}</span></td>
+          <td class="mono">${r.lineaMatch.unidades}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table></div>`;
+}
+
+// ===================== INFORMES =====================
+function initMesRapido() {
+  const sel = document.getElementById('inf_mes');
+  const year = new Date().getFullYear();
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  sel.innerHTML = '<option value="">-- Seleccionar mes --</option>';
+  meses.forEach((m, i) => {
+    const opt = document.createElement('option');
+    opt.value = i + 1;
+    opt.textContent = `${m} ${year}`;
+    sel.appendChild(opt);
+  });
+}
+
+function setMesRapido() {
+  const mes = document.getElementById('inf_mes').value;
+  if (!mes) return;
+  const year = new Date().getFullYear();
+  const m = parseInt(mes);
+  const desde = `${year}-${String(m).padStart(2,'0')}-01`;
+  const ultimo = new Date(year, m, 0).getDate();
+  const hasta = `${year}-${String(m).padStart(2,'0')}-${String(ultimo).padStart(2,'0')}`;
+  document.getElementById('inf_desde').value = desde;
+  document.getElementById('inf_hasta').value = hasta;
+}
+
+function resolveInfClientName() {
+  const cod = document.getElementById('inf_codigoCliente').value.trim();
+  const match = getClientesAll().find(c => c.code === cod);
+  if (match) document.getElementById('inf_cliente').value = match.name;
+}
+
+function resolveInfClientCode() {
+  const val = document.getElementById('inf_cliente').value.trim();
+  const match = getClientesAll().find(c => c.name.toLowerCase() === val.toLowerCase());
+  if (match) document.getElementById('inf_codigoCliente').value = match.code;
+}
+
+function generarInforme() {
+  const desde = document.getElementById('inf_desde').value;
+  const hasta = document.getElementById('inf_hasta').value;
+  const clienteFiltro = document.getElementById('inf_cliente').value.trim().toLowerCase();
+  const codigoFiltro = document.getElementById('inf_codigoCliente').value.trim();
+
+  let albs = state.albaranes.filter(a => {
+    const matchDesde = !desde || a.fecha >= desde;
+    const matchHasta = !hasta || a.fecha <= hasta;
+    const matchCliente = !clienteFiltro || a.cliente.toLowerCase().includes(clienteFiltro);
+    const matchCodigo = !codigoFiltro || a.codigoCliente === codigoFiltro;
+    return matchDesde && matchHasta && matchCliente && matchCodigo;
+  });
+
+  albs = albs.sort((a,b) => new Date(a.fecha) - new Date(b.fecha));
+
+  const totalesProd = {};
+  albs.forEach(a => {
+    a.lineas.forEach(l => {
+      if (!totalesProd[l.codigo]) totalesProd[l.codigo] = { nombre: l.nombre || l.codigo, uds: 0 };
+      totalesProd[l.codigo].uds += l.unidades || 0;
+    });
+  });
+
+  const titulo = `Informe ${desde ? 'del ' + formatFecha(desde) : ''}${hasta ? ' al ' + formatFecha(hasta) : ''}${clienteFiltro ? ' — ' + clienteFiltro : ''}`;
+
+  const out = document.getElementById('informeOutput');
+  out.innerHTML = `
+    <div class="card">
+      <div class="card-title">${titulo}</div>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:1rem"><strong>${albs.length}</strong> albaranes en el período</p>
+      
+      <div style="margin-bottom:1.5rem">
+        <div style="font-weight:600;font-size:0.82rem;margin-bottom:0.75rem">Totales por producto</div>
+        <div class="stock-grid">
+          ${Object.entries(totalesProd).map(([cod, v]) => `
+            <div class="stock-item">
+              <div class="prod-name">${v.nombre}</div>
+              <div class="prod-qty">${v.uds.toLocaleString()}</div>
+              <div class="prod-unit">uds vendidas</div>
+            </div>`).join('')}
+        </div>
+      </div>
+
+      <div>
+        <div style="font-weight:600;font-size:0.82rem;margin-bottom:0.75rem">Detalle de albaranes</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Albarán</th><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Uds</th><th>Lote</th></tr></thead>
+            <tbody>
+              ${albs.flatMap(a => a.lineas.map(l => `
+                <tr>
+                  <td class="mono">${a.albaran}</td>
+                  <td class="mono">${formatFecha(a.fecha)}</td>
+                  <td>${a.cliente}</td>
+                  <td style="font-size:0.82rem">${l.nombre||l.codigo}</td>
+                  <td class="mono">${l.unidades}</td>
+                  <td>${l.lote ? `<span class="badge badge-green">${l.lote}</span>` : '<span class="badge badge-gray">—</span>'}</td>
+                </tr>`)).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ===================== PRODUCTOS =====================
+window.accionProducto = function(codigo, accion) {
+  const idx = state.productos.findIndex(p => p.codigo === codigo);
+  if (idx === -1) return;
+  if (accion === 'editar') editarProducto(idx);
+  else if (accion === 'toggle') toggleProducto(idx);
+  else if (accion === 'borrar') borrarProducto(idx);
+};
+
+function renderTablaProductos() {
+  const tbody = document.getElementById('tablaProductos');
+  tbody.innerHTML = '';
+  state.productos.forEach((p) => {
+    const tr = document.createElement('tr');
+    const cod = p.codigo.replace(/'/g, "\'");
+    tr.innerHTML = `
+      <td class="mono">${p.codigo}</td>
+      <td>${p.nombre}</td>
+      <td class="mono">${p.peso ? p.peso + ' kg' : '—'}</td>
+      <td><span class="badge ${p.activo ? 'badge-green' : 'badge-gray'}">${p.activo ? 'Activo' : 'Inactivo'}</span></td>
+      <td>
+        <button class="btn btn-secondary btn-small" onclick="accionProducto('${cod}','editar')">Editar</button>
+        <button class="btn btn-secondary btn-small" style="margin-left:0.25rem" onclick="accionProducto('${cod}','toggle')">${p.activo ? 'Desactivar' : 'Activar'}</button>
+        <button class="btn btn-danger btn-small" style="margin-left:0.25rem" onclick="accionProducto('${cod}','borrar')">Borrar</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function agregarProducto() {
+  const codigo = document.getElementById('prod_codigo').value.trim().toUpperCase();
+  const nombre = document.getElementById('prod_nombre').value.trim();
+  const peso = parseFloat(document.getElementById('prod_peso').value) || 0;
+  if (!codigo || !nombre) { alert('Código y nombre son obligatorios.'); return; }
+  if (state.productos.find(p => p.codigo === codigo)) { alert('Ya existe un producto con ese código.'); return; }
+  state.productos.push({ codigo, nombre, peso, activo: true });
+  save();
+  renderTablaProductos();
+  renderStockEdit();
+  document.getElementById('prod_codigo').value = '';
+  document.getElementById('prod_nombre').value = '';
+  document.getElementById('prod_peso').value = '';
+}
+
+function toggleProducto(idx) {
+  state.productos[idx].activo = !state.productos[idx].activo;
+  save();
+  renderTablaProductos();
+  renderStockEdit();
+  renderStockDisplay();
+}
+
+let editProductoIdx = null;
+
+function editarProducto(idx) {
+  editProductoIdx = idx;
+  const p = state.productos[idx];
+  document.getElementById('ep_codigo').value = p.codigo;
+  document.getElementById('ep_nombre').value = p.nombre;
+  document.getElementById('ep_peso').value = p.peso || '';
+  document.getElementById('modalEditarProducto').classList.add('open');
+}
+
+function guardarEdicionProducto() {
+  const idx = editProductoIdx;
+  if (idx === null) return;
+  const nuevoCodigo = document.getElementById('ep_codigo').value.trim().toUpperCase();
+  const nuevoNombre = document.getElementById('ep_nombre').value.trim();
+  const nuevoPeso = parseFloat(document.getElementById('ep_peso').value) || 0;
+  if (!nuevoCodigo || !nuevoNombre) { alert('Código y nombre son obligatorios.'); return; }
+  // Check codigo not duplicate (unless same product)
+  const duplicado = state.productos.find((p, i) => p.codigo === nuevoCodigo && i !== idx);
+  if (duplicado) { alert('Ya existe otro producto con ese código.'); return; }
+  // If codigo changed, update albaranes references too
+  const codigoAntiguo = state.productos[idx].codigo;
+  if (codigoAntiguo !== nuevoCodigo) {
+    state.albaranes.forEach(a => {
+      a.lineas.forEach(l => { if (l.codigo === codigoAntiguo) { l.codigo = nuevoCodigo; } });
+    });
+    if (state.stockInicial[codigoAntiguo] !== undefined) {
+      state.stockInicial[nuevoCodigo] = state.stockInicial[codigoAntiguo];
+      delete state.stockInicial[codigoAntiguo];
+    }
+  }
+  state.productos[idx].codigo = nuevoCodigo;
+  state.productos[idx].nombre = nuevoNombre;
+  state.productos[idx].peso = nuevoPeso;
+  save();
+  cerrarModalProducto();
+  renderTablaProductos();
+  renderStockEdit();
+  renderStockDisplay();
+}
+
+function cerrarModalProducto() {
+  document.getElementById('modalEditarProducto').classList.remove('open');
+  editProductoIdx = null;
+}
+
+function borrarProducto(idx) {
+  const p = state.productos[idx];
+  if (!confirm(`¿Seguro que quieres borrar "${p.nombre}"? Si tiene albaranes registrados, el stock puede descuadrarse.`)) return;
+  state.productos.splice(idx, 1);
+  save();
+  renderTablaProductos();
+  renderStockEdit();
+  renderStockDisplay();
+}
+
+// ===================== UTILS =====================
+function formatFecha(iso) {
+  if (!iso) return '';
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}/${y}`;
 }
 </script>
 </body>
