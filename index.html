@@ -693,6 +693,28 @@ async function saveRemoto() {
   }
 }
 
+function fixFecha(f) {
+  if (!f) return '';
+  // If it's a Date object or ISO string from Sheets, convert to YYYY-MM-DD
+  const s = String(f);
+  // Already correct format YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  // ISO format with time: 2026-03-10T23:00:00.000Z
+  const isoMatch = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (isoMatch) {
+    // Sheets sometimes shifts by timezone, use UTC date
+    const d = new Date(s);
+    const y = d.getUTCFullYear();
+    const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(d.getUTCDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+  // DD/MM/YYYY
+  const dmyMatch = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (dmyMatch) return `${dmyMatch[3]}-${dmyMatch[2].padStart(2,'0')}-${dmyMatch[1].padStart(2,'0')}`;
+  return s;
+}
+
 async function cargarRemoto() {
   // Don't reload while processing a PDF queue - would overwrite current state
   if (pdfQueue.length > 0) return;
@@ -704,7 +726,10 @@ async function cargarRemoto() {
     ]);
     const d1 = await r1.json();
     const d2 = await r2.json();
-    if (d1.albaranes) state.albaranes = d1.albaranes;
+    if (d1.albaranes) state.albaranes = d1.albaranes.map(a => ({
+      ...a,
+      fecha: fixFecha(a.fecha)
+    }));
     if (d2.stock) state.stockInicial = d2.stock;
   } catch(e) {
     console.warn('Error cargando desde Google Sheets:', e);
