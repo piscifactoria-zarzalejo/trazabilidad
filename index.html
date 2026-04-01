@@ -259,12 +259,12 @@
 
   /* PRINT */
   @media print {
-    @page { margin: 2cm; }
+    @page { margin: 0; }
 
     header, nav, .btn, .btn-row, .no-print { display: none !important; }
     .panel { display: block !important; }
     .panel:not(.active) { display: none !important; }
-    body { background: #fff; font-size: 10pt; }
+    body { background: #fff; font-size: 10pt; padding: 2cm !important; box-sizing: border-box; }
     main { padding: 0 !important; max-width: 100% !important; margin: 0 !important; }
     .subtitle { display: none !important; }
     h2 { display: none !important; }
