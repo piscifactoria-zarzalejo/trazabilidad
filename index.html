@@ -1213,7 +1213,11 @@ async function processPDF(file) {
       const parsed = JSON.parse(clean);
       albaranes = Array.isArray(parsed) ? parsed : [parsed];
     } catch(e) {
-      albaranes = [JSON.parse(clean)];
+      console.error('JSON inválido recibido de Gemini:', clean);
+      document.getElementById('extractingCard').style.display = 'none';
+      document.getElementById('formCard').style.display = 'block';
+      document.getElementById('alertExtract').innerHTML = `<div class="alert alert-warning">⚠ No se pudo extraer automáticamente. Rellena los datos manualmente.</div>`;
+      return;
     }
 
     pdfQueue = albaranes;
