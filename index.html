@@ -593,12 +593,17 @@
   <p class="subtitle" id="screen-subtitle-listado">Historial completo de albaranes registrados.</p>
 
   <div class="card no-print">
-    <div class="search-bar">
-      <input type="text" id="filtroTexto" placeholder="Buscar por albarán, cliente…" oninput="filtrarListado()">
-      <input type="text" id="filtroCodigo" placeholder="Cód. cliente" style="max-width:130px" oninput="filtrarListado()">
-      <input type="date" id="filtroDesde" oninput="filtrarListado()">
-      <span style="color:var(--text-muted);font-size:0.82rem">hasta</span>
-      <input type="date" id="filtroHasta" oninput="filtrarListado()">
+    <div style="display:flex;flex-wrap:wrap;gap:0.75rem;align-items:center;margin-bottom:1.25rem">
+      <input type="text" id="filtroTexto" placeholder="Buscar por albarán, cliente…" style="font-family:var(--sans);font-size:0.9rem;padding:0.55rem 0.75rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);width:220px" oninput="filtrarListado()">
+      <input type="text" id="filtroCodigo" placeholder="Cód. cliente" style="font-family:var(--sans);font-size:0.9rem;padding:0.55rem 0.75rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);width:120px" oninput="filtrarListado()">
+      <div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:nowrap">
+        <label style="font-size:0.78rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap">Desde</label>
+        <input type="date" id="filtroDesde" style="font-family:var(--sans);font-size:0.9rem;padding:0.55rem 0.75rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text)" oninput="filtrarListado()">
+      </div>
+      <div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:nowrap">
+        <label style="font-size:0.78rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap">Hasta</label>
+        <input type="date" id="filtroHasta" style="font-family:var(--sans);font-size:0.9rem;padding:0.55rem 0.75rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text)" oninput="filtrarListado()">
+      </div>
       <button class="btn btn-secondary btn-small" onclick="limpiarFiltros()">Limpiar</button>
     </div>
   </div>
