@@ -595,6 +595,7 @@
   <div class="card no-print">
     <div class="search-bar">
       <input type="text" id="filtroTexto" placeholder="Buscar por albarán, cliente…" oninput="filtrarListado()">
+      <input type="text" id="filtroCodigo" placeholder="Cód. cliente" style="max-width:130px" oninput="filtrarListado()">
       <input type="date" id="filtroDesde" oninput="filtrarListado()">
       <span style="color:var(--text-muted);font-size:0.82rem">hasta</span>
       <input type="date" id="filtroHasta" oninput="filtrarListado()">
@@ -609,6 +610,7 @@
           <tr>
             <th>Albarán</th>
             <th>Fecha</th>
+            <th>Cód.</th>
             <th>Cliente</th>
             <th>Productos</th>
             <th class="no-print">Acciones</th>
@@ -1213,11 +1215,7 @@ async function processPDF(file) {
       const parsed = JSON.parse(clean);
       albaranes = Array.isArray(parsed) ? parsed : [parsed];
     } catch(e) {
-      console.error('JSON inválido recibido de Gemini:', clean);
-      document.getElementById('extractingCard').style.display = 'none';
-      document.getElementById('formCard').style.display = 'block';
-      document.getElementById('alertExtract').innerHTML = `<div class="alert alert-warning">⚠ No se pudo extraer automáticamente. Rellena los datos manualmente.</div>`;
-      return;
+      albaranes = [JSON.parse(clean)];
     }
 
     pdfQueue = albaranes;
@@ -1534,7 +1532,7 @@ function renderTablaAlbaranes(filtrados) {
   const sorted = [...albs].sort((a,b) => {
     const fd = new Date(b.fecha) - new Date(a.fecha);
     if (fd !== 0) return fd;
-    return String(b.albaran).localeCompare(String(a.albaran), undefined, {numeric:true});
+    return String(a.albaran).localeCompare(String(b.albaran), undefined, {numeric:true});
   });
   sorted.forEach(alb => {
     const prodsStr = alb.lineas.map(l => `${l.nombre || l.codigo}: <strong>${l.unidades}</strong> uds${l.lote ? ` <span class="badge badge-green">${l.lote}</span>` : ''}`).join('<br>');
@@ -1542,6 +1540,7 @@ function renderTablaAlbaranes(filtrados) {
     tr.innerHTML = `
       <td class="mono">${alb.albaran}</td>
       <td class="mono">${formatFecha(alb.fecha)}</td>
+      <td class="mono" style="color:var(--text-muted)">${alb.codigoCliente || '—'}</td>
       <td>${alb.cliente}</td>
       <td style="font-size:0.8rem">${prodsStr}</td>
       <td class="no-print">
@@ -1553,6 +1552,7 @@ function renderTablaAlbaranes(filtrados) {
 
 function filtrarListado() {
   const texto = document.getElementById('filtroTexto').value.toLowerCase();
+  const codigo = document.getElementById('filtroCodigo').value.trim().toLowerCase();
   const desde = document.getElementById('filtroDesde').value;
   const hasta = document.getElementById('filtroHasta').value;
   
@@ -1561,9 +1561,10 @@ function filtrarListado() {
       a.albaran.toLowerCase().includes(texto) || 
       a.cliente.toLowerCase().includes(texto) ||
       a.lineas.some(l => l.lote && l.lote.toLowerCase().includes(texto));
+    const matchCodigo = !codigo || String(a.codigoCliente || '').toLowerCase().includes(codigo);
     const matchDesde = !desde || a.fecha >= desde;
     const matchHasta = !hasta || a.fecha <= hasta;
-    return matchTexto && matchDesde && matchHasta;
+    return matchTexto && matchCodigo && matchDesde && matchHasta;
   });
   renderTablaAlbaranes(filtered);
   actualizarSubtituloListado(texto, desde, hasta);
@@ -1598,6 +1599,7 @@ function actualizarSubtituloListado(texto, desde, hasta) {
 
 function limpiarFiltros() {
   document.getElementById('filtroTexto').value = '';
+  document.getElementById('filtroCodigo').value = '';
   document.getElementById('filtroDesde').value = '';
   document.getElementById('filtroHasta').value = '';
   renderTablaAlbaranes();
@@ -1783,7 +1785,7 @@ function generarInforme() {
     const matchDesde = !desde || a.fecha >= desde;
     const matchHasta = !hasta || a.fecha <= hasta;
     const matchCliente = !clienteFiltro || a.cliente.toLowerCase().includes(clienteFiltro);
-    const matchCodigo = !codigoFiltro || a.codigoCliente === codigoFiltro;
+    const matchCodigo = !codigoFiltro || String(a.codigoCliente || '') === String(codigoFiltro);
     return matchDesde && matchHasta && matchCliente && matchCodigo;
   });
 
