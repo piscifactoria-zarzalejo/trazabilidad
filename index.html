@@ -1537,7 +1537,7 @@ function renderTablaAlbaranes(filtrados) {
   const sorted = [...albs].sort((a,b) => {
     const fd = new Date(b.fecha) - new Date(a.fecha);
     if (fd !== 0) return fd;
-    return String(a.albaran).localeCompare(String(b.albaran), undefined, {numeric:true});
+    return String(b.albaran).localeCompare(String(a.albaran), undefined, {numeric:true});
   });
   sorted.forEach(alb => {
     const prodsStr = alb.lineas.map(l => `${l.nombre || l.codigo}: <strong>${l.unidades}</strong> uds${l.lote ? ` <span class="badge badge-green">${l.lote}</span>` : ''}`).join('<br>');
