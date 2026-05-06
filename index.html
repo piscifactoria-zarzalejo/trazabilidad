@@ -1791,26 +1791,28 @@ function generarInforme() {
   let albs = state.albaranes.filter(a => {
     const matchDesde = !desde || a.fecha >= desde;
     const matchHasta = !hasta || a.fecha <= hasta;
-    const matchCliente = !clienteFiltro || a.cliente.toLowerCase().includes(clienteFiltro);
-    // Buscar por código: comparar como strings recortados, o buscar el nombre del cliente asociado al código
-    let matchCodigo = true;
+
+    let matchCliente = true;
     if (codigoFiltro) {
+      // Si hay código, filtrar solo por código (comparación directa o via nombre del cliente)
       const codigoNorm = codigoFiltro.trim();
       const codigoAlb = (a.codigoCliente || '').trim();
       if (codigoAlb === codigoNorm) {
-        matchCodigo = true;
+        matchCliente = true;
       } else {
-        // Puede que el albarán no tenga código guardado pero sí el nombre: buscar por nombre del cliente
+        // Fallback: buscar el nombre del cliente asociado al código y comparar por nombre
         const clienteDelCodigo = getClientesAll().find(c => c.code === codigoNorm);
-        if (clienteDelCodigo) {
-          matchCodigo = a.cliente.toLowerCase().includes(clienteDelCodigo.name.toLowerCase()) ||
-                        clienteDelCodigo.name.toLowerCase().includes(a.cliente.toLowerCase());
-        } else {
-          matchCodigo = false;
-        }
+        matchCliente = clienteDelCodigo
+          ? a.cliente.toLowerCase().includes(clienteDelCodigo.name.toLowerCase()) ||
+            clienteDelCodigo.name.toLowerCase().includes(a.cliente.toLowerCase())
+          : false;
       }
+    } else if (clienteFiltro) {
+      // Si no hay código pero sí nombre, filtrar por nombre
+      matchCliente = a.cliente.toLowerCase().includes(clienteFiltro);
     }
-    return matchDesde && matchHasta && matchCliente && matchCodigo;
+
+    return matchDesde && matchHasta && matchCliente;
   });
 
   albs = albs.sort((a,b) => {
