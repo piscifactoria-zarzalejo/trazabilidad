@@ -1792,7 +1792,24 @@ function generarInforme() {
     const matchDesde = !desde || a.fecha >= desde;
     const matchHasta = !hasta || a.fecha <= hasta;
     const matchCliente = !clienteFiltro || a.cliente.toLowerCase().includes(clienteFiltro);
-    const matchCodigo = !codigoFiltro || a.codigoCliente === codigoFiltro;
+    // Buscar por código: comparar como strings recortados, o buscar el nombre del cliente asociado al código
+    let matchCodigo = true;
+    if (codigoFiltro) {
+      const codigoNorm = codigoFiltro.trim();
+      const codigoAlb = (a.codigoCliente || '').trim();
+      if (codigoAlb === codigoNorm) {
+        matchCodigo = true;
+      } else {
+        // Puede que el albarán no tenga código guardado pero sí el nombre: buscar por nombre del cliente
+        const clienteDelCodigo = getClientesAll().find(c => c.code === codigoNorm);
+        if (clienteDelCodigo) {
+          matchCodigo = a.cliente.toLowerCase().includes(clienteDelCodigo.name.toLowerCase()) ||
+                        clienteDelCodigo.name.toLowerCase().includes(a.cliente.toLowerCase());
+        } else {
+          matchCodigo = false;
+        }
+      }
+    }
     return matchDesde && matchHasta && matchCliente && matchCodigo;
   });
 
