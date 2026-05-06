@@ -1857,45 +1857,45 @@ function generarInforme() {
           <div class="table-wrap">
             <table>
               <colgroup>
-                <col style="width:28%">
+                <col style="width:30%">
+                <col style="width:9%">
                 <col style="width:10%">
-                <col style="width:11%">
+                <col style="width:9%">
                 <col style="width:10%">
-                <col style="width:11%">
-                <col style="width:13%">
-                <col style="width:17%">
+                <col style="width:12%">
+                <col style="width:20%">
               </colgroup>
               <thead>
                 <tr>
                   <th>Producto</th>
-                  <th>Uds venta</th>
-                  <th>Kg vendidos</th>
-                  <th>Uds stock</th>
-                  <th>Kg stock</th>
-                  <th>Val. unit.</th>
-                  <th>Valoración stock</th>
+                  <th style="white-space:nowrap">Uds venta</th>
+                  <th style="white-space:nowrap">Kg vendidos</th>
+                  <th style="white-space:nowrap">Uds stock</th>
+                  <th style="white-space:nowrap">Kg stock</th>
+                  <th style="white-space:nowrap">Val. unit.</th>
+                  <th style="white-space:nowrap">Valoración stock</th>
                 </tr>
               </thead>
               <tbody>
                 ${sec.filas.map(f => `<tr>
                   <td style="font-size:0.82rem">${f.nombre}</td>
-                  <td class="mono">${f.udsVendidas.toLocaleString()}</td>
-                  <td class="mono">${f.kgVendidos.toFixed(1)}</td>
-                  <td class="mono">${f.udsStock.toLocaleString()}</td>
-                  <td class="mono">${f.kgStock.toFixed(1)}</td>
-                  <td class="mono">${f.precioUnit.toFixed(2)} €</td>
-                  <td class="mono">${f.valorStock.toFixed(2)} €</td>
+                  <td class="mono" style="white-space:nowrap">${f.udsVendidas}</td>
+                  <td class="mono" style="white-space:nowrap">${f.kgVendidos.toFixed(1)}</td>
+                  <td class="mono" style="white-space:nowrap">${f.udsStock}</td>
+                  <td class="mono" style="white-space:nowrap">${f.kgStock.toFixed(1)} kg</td>
+                  <td class="mono" style="white-space:nowrap">${f.precioUnit.toFixed(2)} €</td>
+                  <td class="mono" style="white-space:nowrap">${f.valorStock.toFixed(2)} €</td>
                 </tr>`).join('')}
               </tbody>
               <tfoot>
                 <tr style="border-top:1px solid #1a3a6b;font-weight:700;background:#f0f4f0">
                   <td>Total ${sec.grupo}</td>
-                  <td class="mono">${sec.subtotal.udsVendidas.toLocaleString()}</td>
-                  <td class="mono">${sec.subtotal.kgVendidos.toFixed(1)} kg</td>
-                  <td class="mono">${sec.subtotal.udsStock.toLocaleString()}</td>
-                  <td class="mono">${sec.subtotal.kgStock.toFixed(1)} kg</td>
+                  <td class="mono" style="white-space:nowrap">${sec.subtotal.udsVendidas}</td>
+                  <td class="mono" style="white-space:nowrap">${sec.subtotal.kgVendidos.toFixed(1)} kg</td>
+                  <td class="mono" style="white-space:nowrap">${sec.subtotal.udsStock}</td>
+                  <td class="mono" style="white-space:nowrap">${sec.subtotal.kgStock.toFixed(1)} kg</td>
                   <td class="mono">—</td>
-                  <td class="mono">${sec.subtotal.valorStock.toFixed(2)} €</td>
+                  <td class="mono" style="white-space:nowrap">${sec.subtotal.valorStock.toFixed(2)} €</td>
                 </tr>
               </tfoot>
             </table>
