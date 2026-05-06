@@ -593,17 +593,11 @@
   <p class="subtitle" id="screen-subtitle-listado">Historial completo de albaranes registrados.</p>
 
   <div class="card no-print">
-    <div style="display:flex;flex-wrap:wrap;gap:0.75rem;align-items:center;margin-bottom:1.25rem">
-      <input type="text" id="filtroTexto" placeholder="Buscar por albarán, cliente…" style="font-family:var(--sans);font-size:0.9rem;padding:0.55rem 0.75rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);width:220px" oninput="filtrarListado()">
-      <input type="text" id="filtroCodigo" placeholder="Cód. cliente" style="font-family:var(--sans);font-size:0.9rem;padding:0.55rem 0.75rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);width:120px" oninput="filtrarListado()">
-      <div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:nowrap">
-        <label style="font-size:0.78rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap">Desde</label>
-        <input type="date" id="filtroDesde" style="font-family:var(--sans);font-size:0.9rem;padding:0.55rem 0.75rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text)" oninput="filtrarListado()">
-      </div>
-      <div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:nowrap">
-        <label style="font-size:0.78rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap">Hasta</label>
-        <input type="date" id="filtroHasta" style="font-family:var(--sans);font-size:0.9rem;padding:0.55rem 0.75rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text)" oninput="filtrarListado()">
-      </div>
+    <div class="search-bar">
+      <input type="text" id="filtroTexto" placeholder="Buscar por albarán, cliente…" oninput="filtrarListado()">
+      <input type="date" id="filtroDesde" oninput="filtrarListado()">
+      <span style="color:var(--text-muted);font-size:0.82rem">hasta</span>
+      <input type="date" id="filtroHasta" oninput="filtrarListado()">
       <button class="btn btn-secondary btn-small" onclick="limpiarFiltros()">Limpiar</button>
     </div>
   </div>
@@ -615,7 +609,6 @@
           <tr>
             <th>Albarán</th>
             <th>Fecha</th>
-            <th>Cód.</th>
             <th>Cliente</th>
             <th>Productos</th>
             <th class="no-print">Acciones</th>
@@ -1220,7 +1213,11 @@ async function processPDF(file) {
       const parsed = JSON.parse(clean);
       albaranes = Array.isArray(parsed) ? parsed : [parsed];
     } catch(e) {
-      albaranes = [JSON.parse(clean)];
+      console.error('JSON inválido recibido de Gemini:', clean);
+      document.getElementById('extractingCard').style.display = 'none';
+      document.getElementById('formCard').style.display = 'block';
+      document.getElementById('alertExtract').innerHTML = `<div class="alert alert-warning">⚠ No se pudo extraer automáticamente. Rellena los datos manualmente.</div>`;
+      return;
     }
 
     pdfQueue = albaranes;
@@ -1545,7 +1542,6 @@ function renderTablaAlbaranes(filtrados) {
     tr.innerHTML = `
       <td class="mono">${alb.albaran}</td>
       <td class="mono">${formatFecha(alb.fecha)}</td>
-      <td class="mono" style="color:var(--text-muted)">${alb.codigoCliente || '—'}</td>
       <td>${alb.cliente}</td>
       <td style="font-size:0.8rem">${prodsStr}</td>
       <td class="no-print">
@@ -1557,7 +1553,6 @@ function renderTablaAlbaranes(filtrados) {
 
 function filtrarListado() {
   const texto = document.getElementById('filtroTexto').value.toLowerCase();
-  const codigo = document.getElementById('filtroCodigo').value.trim().toLowerCase();
   const desde = document.getElementById('filtroDesde').value;
   const hasta = document.getElementById('filtroHasta').value;
   
@@ -1566,10 +1561,9 @@ function filtrarListado() {
       a.albaran.toLowerCase().includes(texto) || 
       a.cliente.toLowerCase().includes(texto) ||
       a.lineas.some(l => l.lote && l.lote.toLowerCase().includes(texto));
-    const matchCodigo = !codigo || String(a.codigoCliente || '').toLowerCase().includes(codigo);
     const matchDesde = !desde || a.fecha >= desde;
     const matchHasta = !hasta || a.fecha <= hasta;
-    return matchTexto && matchCodigo && matchDesde && matchHasta;
+    return matchTexto && matchDesde && matchHasta;
   });
   renderTablaAlbaranes(filtered);
   actualizarSubtituloListado(texto, desde, hasta);
@@ -1604,7 +1598,6 @@ function actualizarSubtituloListado(texto, desde, hasta) {
 
 function limpiarFiltros() {
   document.getElementById('filtroTexto').value = '';
-  document.getElementById('filtroCodigo').value = '';
   document.getElementById('filtroDesde').value = '';
   document.getElementById('filtroHasta').value = '';
   renderTablaAlbaranes();
@@ -1790,7 +1783,7 @@ function generarInforme() {
     const matchDesde = !desde || a.fecha >= desde;
     const matchHasta = !hasta || a.fecha <= hasta;
     const matchCliente = !clienteFiltro || a.cliente.toLowerCase().includes(clienteFiltro);
-    const matchCodigo = !codigoFiltro || String(a.codigoCliente || '') === String(codigoFiltro);
+    const matchCodigo = !codigoFiltro || a.codigoCliente === codigoFiltro;
     return matchDesde && matchHasta && matchCliente && matchCodigo;
   });
 
@@ -1826,7 +1819,7 @@ function generarInforme() {
       const kgStock = udsStock * (p.peso || 0);
       const kgVendidos = udsVendidas * (p.peso || 0);
       const valorStock = udsStock * (p.precio || 0);
-      return { nombre: p.nombre, udsStock, udsVendidas, kgStock, kgVendidos, valorStock };
+      return { nombre: p.nombre, udsStock, udsVendidas, kgStock, kgVendidos, valorStock, precioUnit: p.precio || 0 };
     });
     const subtotal = {
       udsStock: filas.reduce((s,f) => s+f.udsStock, 0),
@@ -1864,12 +1857,13 @@ function generarInforme() {
           <div class="table-wrap">
             <table>
               <colgroup>
-                <col style="width:32%">
+                <col style="width:28%">
+                <col style="width:10%">
+                <col style="width:11%">
+                <col style="width:10%">
                 <col style="width:11%">
                 <col style="width:13%">
-                <col style="width:11%">
-                <col style="width:15%">
-                <col style="width:18%">
+                <col style="width:17%">
               </colgroup>
               <thead>
                 <tr>
@@ -1878,6 +1872,7 @@ function generarInforme() {
                   <th>Kg vendidos</th>
                   <th>Uds stock</th>
                   <th>Kg stock</th>
+                  <th>Val. unit.</th>
                   <th>Valoración stock</th>
                 </tr>
               </thead>
@@ -1888,6 +1883,7 @@ function generarInforme() {
                   <td class="mono">${f.kgVendidos.toFixed(1)}</td>
                   <td class="mono">${f.udsStock.toLocaleString()}</td>
                   <td class="mono">${f.kgStock.toFixed(1)}</td>
+                  <td class="mono">${f.precioUnit.toFixed(2)} €</td>
                   <td class="mono">${f.valorStock.toFixed(2)} €</td>
                 </tr>`).join('')}
               </tbody>
@@ -1898,6 +1894,7 @@ function generarInforme() {
                   <td class="mono">${sec.subtotal.kgVendidos.toFixed(1)} kg</td>
                   <td class="mono">${sec.subtotal.udsStock.toLocaleString()}</td>
                   <td class="mono">${sec.subtotal.kgStock.toFixed(1)} kg</td>
+                  <td class="mono">—</td>
                   <td class="mono">${sec.subtotal.valorStock.toFixed(2)} €</td>
                 </tr>
               </tfoot>
