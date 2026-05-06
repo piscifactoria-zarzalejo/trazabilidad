@@ -331,6 +331,12 @@
     th { font-size: 8pt; background: #f0f0f0 !important; color: #333 !important; padding: 4px 6px !important; }
     td { padding: 3px 6px !important; }
     .badge { font-size: 7.5pt; }
+
+    /* Informe resumen: tabla más compacta para que los nombres de producto no partan en 2 líneas */
+    #informeResumen table { font-size: 7.5pt; }
+    #informeResumen th { font-size: 7pt !important; padding: 3px 4px !important; white-space: nowrap; }
+    #informeResumen td { padding: 2px 4px !important; font-size: 7.5pt !important; white-space: nowrap; }
+    #informeResumen td:first-child { white-space: normal; }
   }
 
   @media screen {
@@ -1878,7 +1884,7 @@ function generarInforme() {
               </thead>
               <tbody>
                 ${sec.filas.map(f => `<tr>
-                  <td style="font-size:0.82rem">${f.nombre}</td>
+                  <td>${f.nombre}</td>
                   <td class="mono" style="white-space:nowrap">${f.udsVendidas}</td>
                   <td class="mono" style="white-space:nowrap">${f.kgVendidos.toFixed(1)}</td>
                   <td class="mono" style="white-space:nowrap">${f.udsStock}</td>
